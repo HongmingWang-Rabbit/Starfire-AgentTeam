@@ -878,6 +878,64 @@ instead of Claude Code with a new adapter.
 
 ---
 
+### Gas Town — `gastownhall/gastown`
+
+**Pitch:** "LLM orchestrator that lets you manage dozens of Claude Code instances at once while they make independent progress towards stated goals."
+
+**Shape:** Go 95% (MIT), 14.1k ⭐, v1.0.0 April 3 2026. Hierarchical "town" metaphor: a **Mayor** (chief-of-staff Claude Code instance) breaks goals into **beads** (tracked issues), assigns them to **polecats** (worker agents) via **convoys** (work bundles). State persists through git worktrees (hooks) — agents survive restarts. Three-tier health monitoring: **Witness** (per-rig), **Deacon** (cross-rig), **Dogs** (infra maintenance). Web dashboard + real-time feed. **Wasteland federation** for cross-town coordination. OTEL telemetry. Ships as Homebrew, npm, or Docker Compose.
+
+**Overlap with us:** Mayor/crew hierarchy ≈ our PM/Research Lead/Dev Lead org chart. Git-backed hook persistence addresses the same context-loss problem as our `agent_memories`. Wasteland federation ≈ inter-org A2A. Deacon patrol loop ≈ our heartbeat monitor. Ships **"Molecule workflow templates"** as a named template — direct namespace collision with `Molecule-AI/molecule-monorepo` that needs investigation.
+
+**Differentiation:** Single-machine tmux-based — all polecats share one host, no Docker isolation per agent, no RBAC, no visual canvas, no external scheduling, no channels, no MCP. Starfire is multi-machine: independent containers, cross-network A2A, visual org chart, governance, and channel integrations.
+
+**Worth borrowing:**
+- **Three-tier health patrol** (Witness/Deacon/Dogs): per-workspace, cross-workspace, and infra-maintenance layers with auto-recovery. More structured than our single heartbeat check; worth adding structured patrol hooks to `workspace-template/` (see filed issue).
+- **Bead ID convention** (`gt-abc12`) for tracked work units — cleaner than our free-text `current_task` heartbeat field.
+- **Seance** (session discovery + continuation after restart) — git-backed approach is more durable than our DB-only workspace resume state.
+
+**Terminology collisions:**
+- "convoy" — Gastown: bundle of beads toward a goal. Ours: undefined. No collision.
+- "rig" — Gastown: project container wrapping a git repo. Ours: undefined.
+- **"Molecule workflow templates"** — Gastown ships templates under this name; our monorepo is `Molecule-AI`. **Branding collision: investigate immediately.**
+
+**Signals to react to:**
+- "Molecule workflow templates" naming — confirm whether this references our platform or is independently named; if independent, address in marketing copy.
+- If Gastown adds Docker isolation and cross-host A2A → direct platform competitor at 14k ⭐; Wasteland federation could substitute for our A2A mesh.
+- If Wasteland spec is published as an open protocol → evaluate alongside A2A.
+- v1.0 stable + Steve Yegge authorship = high community velocity; watch CHANGELOG.
+
+**Last reviewed:** 2026-04-15 · **Stars / activity:** 14.1k ⭐, v1.0.0 April 3 2026
+
+---
+
+### Background Agents — `ColeMurray/background-agents`
+
+**Pitch:** "An open-source background agents coding system — run coding agents autonomously while you focus elsewhere."
+
+**Shape:** TypeScript 80% + Python 16% (MIT), 1.5k ⭐, trending Apr 15 2026. Three-layer: **Control plane** (Cloudflare Workers + Durable Objects, per-session SQLite, WebSocket hub), **Data plane** (Modal sandboxes — isolated dev env per session), **Clients** (Web, Slack, GitHub, Linear, webhooks). Sub-task spawning creates child sessions in parallel on separate sandboxes. Multi-model: Claude Haiku/Sonnet/Opus 4.x, OpenAI GPT-5/Codex, OpenCode Zen. Cron automations, Sentry alert triggers, GitHub PR auto-review, Linear issue triggers. Single-tenant.
+
+**Overlap with us:** Cloudflare Durable Objects as per-agent state ≈ our PostgreSQL workspace rows. Modal sandboxes ≈ our Docker containers. `spawn-task` ≈ `delegate_task`. Slack/GitHub/Linear/webhook triggers ≈ `workspace_channels`. Cron ≈ `workspace_schedules`.
+
+**Differentiation:** No MCP, no A2A protocol, no org hierarchy or RBAC, no persistent agent identity beyond a session, no visual canvas. Cloudflare + Modal is not self-hostable as-is. Single-tenant only. Architectural pattern similarity rather than platform equivalence.
+
+**Worth borrowing:**
+- **Modal snapshot cold-start** — second data point (after Trigger.dev warm pools) that snapshot-based startup is the emerging standard for agent sandboxes; worth prototyping for our claude-code container startup latency.
+- **JSONPath webhook condition filtering** — webhooks fire only when JSONPath conditions match. Our `workspace_channels` fires on every POST; adding this to `platform/internal/handlers/channels.go` would let admins route selectively. Low-effort, high-value.
+- **Per-user model preference on Slack trigger** — users override the workspace model in the Slack mention. Good UX pattern for our channel config.
+
+**Terminology collisions:**
+- "session" — their atomic sandbox run. Ours: informal.
+- "sandbox" — their Modal VM. Ours: Docker container per workspace.
+
+**Signals to react to:**
+- If background-agents adds MCP or A2A → bridges to mesh territory; watch commits.
+- If Cloudflare Workers + Modal becomes the default reference stack for "serverless coding agents" → our Docker Compose story needs a companion serverless guide.
+- Growth 1.5k → 5k ⭐ signals mainstream traction in the "background coding agent" category.
+
+**Last reviewed:** 2026-04-15 · **Stars / activity:** 1.5k ⭐, trending Apr 15 2026
+
+---
+
 ## Candidates to add (backlog)
 
 Short-list of projects to write up next time someone has an hour:
