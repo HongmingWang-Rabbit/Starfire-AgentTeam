@@ -685,6 +685,62 @@ instead of Claude Code with a new adapter.
 
 ---
 
+### CowAgent — `zhayujie/CowAgent`
+
+**Pitch:** "AI assistant built on LLMs with autonomous planning, long-term memory, knowledge management, and a skill engine — lighter and more convenient than OpenClaw."
+
+**Shape:** Python (MIT), 43.3k ⭐, actively maintained. Single-agent assistant framework with autonomous task planning, layered persistent memory (core memory → daily memory → dream distillation), and a skill engine that installs from Skill Hub, GitHub, or creates skills via conversation. Multi-platform: WeChat, Feishu, DingTalk, Enterprise WeChat, QQ, and web. Model-agnostic (OpenAI, Claude, Gemini, DeepSeek, Qwen, GLM, Kimi). Built-in tools: file ops, terminal, browser automation, scheduled tasks, multimodal.
+
+**Overlap with us:** Skill engine (install from Hub, GitHub, or create via conversation) is structurally identical to our `plugins/` registry. Layered memory architecture parallels our `agent_memories` table. Multi-platform messenger support mirrors `workspace_channels`. Star trajectory (~43k) means this is a community reference implementation — things it normalizes will become ecosystem expectations.
+
+**Differentiation:** CowAgent is a **single-user personal assistant**, not a multi-agent platform. No org hierarchy, no A2A, no Docker container isolation, no visual canvas, no scheduling, no approval flows. Self-positioned as "lighter than OpenClaw" — emphasizes simplicity over governance. No concept of roles, RBAC, or multi-workspace coordination.
+
+**Worth borrowing:**
+- **Dream distillation memory** — end-of-session LLM pass that condenses short-term daily memory into durable long-term knowledge. Second data point after Hermes. Worth prototyping in our workspace template: a post-session hook that summarizes recent `activity_logs` into `commit_memory`.
+- **Skill Hub discovery UX** — browsable index of installable skills, separate from the runtime. Our `plugins/` registry has no discovery surface; a marketplace landing page would lower the barrier for org admins significantly.
+
+**Terminology collisions:**
+- "skills" — same filesystem convention as gstack, Hermes, OMC, vercel-labs/skills, agentskills.io. Five data points; see filed issue #[skills-standard].
+- "dream distillation" — their term for memory consolidation. Should be explicitly named in our memory model docs.
+
+**Signals to react to:**
+- If CowAgent adds multi-agent A2A support → closes its main gap; 43k stars = fast adoption.
+- If Skill Hub gains an open submission API → publish our plugins there (cross-install opportunity).
+- If "lighter than OpenClaw" attracts OpenClaw's user base → check whether our `adapters/openclaw/` users migrate and whether the adapter needs updating.
+
+**Last reviewed:** 2026-04-15 · **Stars / activity:** 43.3k ⭐, trending Apr 15 2026
+
+---
+
+### vercel-labs/open-agents — `vercel-labs/open-agents`
+
+**Pitch:** "An open-source template for building cloud agents — from prompt to code changes without keeping your laptop involved."
+
+**Shape:** TypeScript 99%, MIT, 2.5k ⭐, pushed April 15 2026 (brand new). Reference architecture for a cloud-hosted coding agent with three-layer separation: (1) **Web app** — Next.js, auth, sessions, streaming chat UI; (2) **Agent workflow** — durable multi-step execution via Vercel Workflow SDK, runs *outside* the sandbox; (3) **Sandbox** — isolated VM with filesystem, shell, git, dev servers, and snapshot-based resumption. Agent interacts with the sandbox exclusively through tool calls (file read/edit, search, shell). Auto-commit, push, and PR creation built in. Companion repos: `vercel-labs/skills` (installable skills standard) and `vercel-labs/agent-browser` (browser automation CLI).
+
+**Overlap with us:** Three-layer stack (web UI / agent workflow / sandbox) maps directly to Starfire's Canvas / workspace process / Docker container. Durable workflow with snapshot-resume mirrors our `pause` / `resume` lifecycle. The `vercel-labs/skills` standard is the fifth data point in the converging filesystem skills convention (gstack, Hermes, OMC, CowAgent, agentskills.io). Repo integration (clone, branch, PR) overlaps our DevOps workspace role.
+
+**Differentiation:** open-agents is a **single-agent cloud coding template** — no org hierarchy, no A2A, no canvas, no scheduling, no channels, no RBAC. Designed to be forked, not operated as a platform. Workspaces are ephemeral-by-design; Starfire workspaces are persistent identities with memory, roles, and governance. Vercel infrastructure is the implicit target; Starfire is infra-agnostic and multi-runtime.
+
+**Worth borrowing:**
+- **Agent-outside-sandbox** execution model — agent process has zero direct filesystem access and must use tool calls to interact with the sandbox. Cleaner security boundary than our claude-code runtime which runs inside the container. Worth evaluating as a "strict isolation mode" for DevOps workspace template.
+- **Snapshot-based sandbox resumption** — sandbox state is snapshotted and resumed rather than kept warm. Could reduce idle container compute for infrequently-triggered workspaces (nightly audits, scheduled reports).
+- **`vercel-labs/skills` format** — see filed issue for aligning our plugin manifest.
+
+**Terminology collisions:**
+- "sandbox" — their VM execution layer; our Docker container per workspace. Same concept, different scope.
+- "workflow" — their durable execution run; ours is informal. No runtime collision but docs should be unambiguous.
+- "skills" — `vercel-labs/skills` uses the same filesystem convention as four other projects. Fifth data point.
+
+**Signals to react to:**
+- If Vercel adds multi-agent A2A → they have infra distribution + developer mindshare to become a serious platform competitor; track their roadmap issues closely.
+- If `vercel-labs/skills` is published as a formal spec → immediate priority to align our plugin manifest (see filed issue).
+- If open-agents crosses 10k ⭐ → Vercel distribution flywheel; add a "deploy to Vercel" option to our `workspace-template` to capture adjacent users.
+
+**Last reviewed:** 2026-04-15 · **Stars / activity:** 2.5k ⭐, pushed Apr 15 2026
+
+---
+
 ## Candidates to add (backlog)
 
 Short-list of projects to write up next time someone has an hour:
@@ -702,6 +758,7 @@ Short-list of projects to write up next time someone has an hour:
   case we want agent-to-agent discovery beyond a single org.
 - **Temporal** (`temporalio/temporal`) — we already integrate; entry
   should cover when to lean on Temporal vs our in-house scheduling.
-- **vercel-labs/open-agents** — Vercel's open-source cloud-agent template;
-  1k GitHub stars gained in a single day (Apr 15). Thin on details yet;
-  revisit next cycle when docs mature.
+- **vercel-labs/skills** (`vercel-labs/skills`) — Vercel's companion skills
+  standard to open-agents. Now that open-agents is a full entry, this repo
+  deserves its own write-up as a pure skills-registry standard (separate
+  from the agent runtime).
