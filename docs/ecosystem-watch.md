@@ -313,7 +313,7 @@ builders; Starfire users are developers building agent companies.
 - If a major Slack/Discord bot tutorial uses n8n instead of a custom agent
   → indicates channel-first UX is the market expectation we need to match.
 
-**Last reviewed:** 2026-04-13 · **Stars / activity:** ~50k ⭐, pushed daily
+**Last reviewed:** 2026-04-15 · **Stars / activity:** ~50k ⭐, v2.17.0 released Apr 13 2026, pushed daily
 
 ---
 
@@ -569,6 +569,119 @@ and plugins, no code). No org hierarchy, no role marketplace, no RBAC layer.
   watch for an enterprise-tier AgentScope Cloud announcement.
 
 **Last reviewed:** 2026-04-15 · **Stars / activity:** 23.8k ⭐, v1.0.18 Mar 26 2026
+
+---
+
+### oh-my-claudecode — `Yeachan-Heo/oh-my-claudecode`
+
+**Pitch:** "Teams-first multi-agent orchestration for Claude Code. Zero learning
+curve."
+
+**Shape:** TypeScript/JS (MIT), 29.1k ⭐, v4.11.6 April 2026. A Claude Code
+CLI plugin that orchestrates 19 specialized agents through a staged pipeline:
+`team-plan → team-prd → team-exec → team-verify → team-fix (loop)`. Smart model
+routing deploys Haiku for simple tasks and Opus for complex reasoning. tmux-based
+parallelization runs N agents in parallel on a shared task list. Claims 3–5×
+speedup and 30–50% token savings on large projects. Skill extraction
+automatically captures successful debugging patterns into portable `.md` files.
+
+**Overlap with us:** Both treat "a team of specialized agents coordinating on
+shared work" as the primary product metaphor. Both use role-based agent names.
+Both are Claude Code–native with a skill/plugin file convention. OMC's 19
+specialized agents mirror our tier-2 research/dev/ops role structure.
+
+**Differentiation:** OMC is a **single-machine CLI plugin** — all agents share
+one shell via tmux, no Docker isolation, no RBAC, no visual canvas, no A2A
+between independent processes, no scheduling, no channels. Starfire is a
+**multi-machine agent OS**: real containers, cross-network A2A, visual org chart,
+persistent workspace identity, governance and approval flows. OMC is "parallel
+Claude Code sessions on one laptop"; Starfire is "a company of agents with
+independent compute, memory, and governance."
+
+**Worth borrowing:**
+- **Smart model routing by task complexity** — cheap-model for simple tasks,
+  expensive-model for hard reasoning. Could add this to our `a2a_executor.py`
+  dispatch layer: route tasks tagged `complexity=low` to Haiku and
+  `complexity=high` to Opus within the same workspace.
+- **Staged verification loop** (`exec → verify → fix`) — a clean quality gate
+  before delegation results are accepted. Worth building into our PM agent's
+  delegation lifecycle as an optional `require_verification` flag.
+- **Auto-extracted skill files** from successful task runs — same instinct as
+  GenericAgent's skill crystallization; with two data points it's time to
+  prototype `POST /workspaces/:id/skills/crystallize` for Starfire.
+
+**Terminology collisions:**
+- "team" — OMC's `--team` flag runs N agents in parallel on one machine; our
+  "team" is a persistent org hierarchy across containers. Same word, different
+  runtime scope.
+- "skills" — OMC: auto-extracted `.md` patterns from debugging sessions; ours:
+  installable plugin units.
+
+**Signals to react to:**
+- If OMC adds cross-machine A2A coordination → direct substitution for our
+  orchestration layer in Claude Code shops; 29k stars means fast adoption.
+- If OMC's model-routing heuristics are published → benchmark our delegation
+  cost profile against theirs.
+- If OMC's skill extraction format aligns with `agentskills.io` → our plugin
+  manifest should support the same schema so skills install on both platforms.
+
+**Last reviewed:** 2026-04-15 · **Stars / activity:** 29.1k ⭐, v4.11.6 Apr 2026
+
+---
+
+### Claw Code — `instructkr/claw-code`
+
+**Pitch:** "Public Rust implementation of the claw CLI agent harness — the
+fastest repo in history to surpass 100K stars."
+
+**Shape:** Rust (96%) + Python helpers (MIT/community), 185k ⭐, 787 commits.
+CLI agent harness architected as a clean-room rewrite of Claude Code's agent
+loop (sparked by an accidental npm source-map leak in March 2026). Session
+management, `.claude.json` config, container-first workflows, mock parity
+harness for deterministic testing. API-key agnostic (Anthropic, OpenAI). No
+affiliation with Anthropic. Not to be confused with the original OpenClaw
+project referenced in our `adapters/openclaw/` — that predates this repo by
+over a year.
+
+**Overlap with us:** Claw Code agents run the same workspace-level tasks our
+Claude Code runtime workspaces execute. Our Docker-per-workspace model is
+compatible with Claw Code's container-first workflow design. The mock parity
+harness targets the same testing gap as our `a2a_executor.py` test suite.
+
+**Differentiation:** Claw Code is a **standalone CLI** — no multi-agent
+coordination, no org hierarchy, no A2A, no visual canvas, no scheduling, no
+channels, no RBAC. It gives developers a Claude Code alternative; Starfire
+provides the coordination layer and agent OS on top. The two are
+complementary: a Starfire workspace *could* run Claw Code under the hood
+instead of Claude Code with a new adapter.
+
+**Worth borrowing:**
+- **Mock parity harness** — deterministic test execution against a fake agent
+  runtime. We have limited coverage of `a2a_executor.py` edge-case behavior;
+  this pattern is the right model for our CI adapter tests.
+- **`claw doctor` health-check CLI** — structured pre-flight self-diagnosis.
+  Worth adding a `/workspaces/:id/health` endpoint to our platform API that
+  runs equivalent checks (auth, tool access, memory connectivity, A2A
+  reachability) and returns a structured report.
+
+**Terminology collisions:**
+- "claw" / "openclaw" — the `claw` CLI name surface-overlaps our
+  `adapters/openclaw/` adapter, but they target different projects. Our
+  adapter docs should clarify which claw it targets.
+- "session" — Claw Code: persisted CLI execution context. Ours: informal.
+
+**Signals to react to:**
+- If Claw Code adds multi-agent coordination (spawning + routing multiple
+  `claw` instances) → directly substitutes for our Claude Code adapter in
+  cost-sensitive environments; 185k stars means community momentum is
+  already enormous.
+- If Anthropic officially acknowledges or partners with Claw Code → signals
+  the Claude Code architecture is becoming a public API surface; our adapters
+  should declare explicit version compatibility.
+- If Claw Code's mock harness schema is published → adopt it in our CI for
+  adapter regression testing.
+
+**Last reviewed:** 2026-04-15 · **Stars / activity:** 185k ⭐, community-driven
 
 ---
 
