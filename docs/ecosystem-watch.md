@@ -313,7 +313,7 @@ builders; Starfire users are developers building agent companies.
 - If a major Slack/Discord bot tutorial uses n8n instead of a custom agent
   → indicates channel-first UX is the market expectation we need to match.
 
-**Last reviewed:** 2026-04-13 · **Stars / activity:** ~50k ⭐, pushed daily
+**Last reviewed:** 2026-04-15 · **Stars / activity:** ~50k ⭐, v2.17.0 released Apr 13 2026, pushed daily
 
 ---
 
@@ -435,6 +435,535 @@ builders; Starfire users are developers building agent companies.
 
 ---
 
+### Microsoft Agent Framework — `microsoft/agent-framework`
+
+**Pitch:** "A framework for building, orchestrating and deploying AI agents
+and multi-agent workflows with support for Python and .NET."
+
+**Shape:** Python + C# (Apache-2.0), 9.5k ⭐, v1.0 April 7, 2026.
+Unifies Semantic Kernel and AutoGen into one production SDK. Graph-based
+orchestration with streaming, checkpointing, and human-in-the-loop.
+DevUI for interactive debugging. Official migration guides from both
+AutoGen and Semantic Kernel.
+
+**Overlap with us:** MCP Registry integration overlaps our `mcp-server`
+tool surface. A2A hosting samples in both Python and .NET overlap
+`a2a_executor.py` directly. Graph-based multi-agent workflows with
+checkpoint/resume mirror our workspace pause/resume lifecycle.
+
+**Differentiation:** Microsoft targets enterprise .NET shops migrating
+existing AutoGen/Semantic Kernel projects. No visual canvas, no org
+hierarchy, no agent marketplace or plugin registry. Agent-framework is a
+**developer SDK** for building agents; Starfire is the **operating system
+for agent teams**.
+
+**Worth borrowing:**
+- **DevUI** for live agent introspection and replay — our Canvas surfaces
+  agent output but has no dev-mode debugger. A debug-mode DevUI would
+  meaningfully improve contributor DX.
+- **Formal middleware layer** for request/response interception — cleaner
+  than our ad hoc hook system; worth formalizing in `a2a_executor.py`.
+
+**Terminology collisions:**
+- "plugin" — agent-framework: tool bundles (Semantic Kernel lineage). Ours:
+  workspace add-ons. Different scopes, same word.
+- "agent" — SDK object with declared role vs. running Docker container.
+
+**Signals to react to:**
+- If they ship a visual canvas for multi-agent org hierarchy → direct
+  Canvas overlap; track their roadmap issues.
+- If A2A samples become a de facto reference implementation → audit our
+  `a2a_executor.py` for compatibility gaps.
+- Our `adapters/autogen/` targets the now-deprecated predecessor; evaluate
+  migrating to target agent-framework instead (see filed issue).
+
+**Last reviewed:** 2026-04-15 · **Stars / activity:** 9.5k ⭐, v1.0 Apr 7 2026
+
+---
+
+### GenericAgent — `lsdefine/GenericAgent`
+
+**Pitch:** "Self-evolving agent achieving full system control with 6× less
+token consumption."
+
+**Shape:** Python (95%), MIT, ~1.7k ⭐, created January 2026. ~3,000
+lines total with a ~100-line core agent loop. Nine atomic tools cover
+browser automation (with session injection), terminal, file ops,
+keyboard/mouse input, screen vision, and ADB. Supports Claude, Gemini,
+Kimi, MiniMax. Multi-frontend: Streamlit, Qt, WeChat, Feishu, DingTalk.
+
+**Overlap with us:** Layered memory (L0–L4) maps conceptually to our
+workspace memory tiers. Skill crystallization — tasks that succeed get
+saved as reusable skills — is the same intent as our plugin install flow.
+
+**Differentiation:** Single-user desktop automation tool, not a
+multi-agent platform. No org hierarchy, no A2A, no cloud deployment.
+Minimal codebase (~100-line loop) is the design goal; Starfire is a
+full team-coordination platform.
+
+**Worth borrowing:**
+- **L0–L4 memory hierarchy** is more explicit than our current memory
+  model — worth adopting as terminology in `AGENTS.md` so contributors
+  can reason about which memory layer to read/write.
+- **6× token-reduction claim**: their prompt compression and skill-reuse
+  approach is worth benchmarking against our claude-code adapter's prompt
+  budgeting, even if the absolute numbers don't transfer.
+
+**Terminology collisions:**
+- "skill" — GenericAgent: a crystallized, reusable task execution workflow.
+  Ours: an installable plugin unit. Similar intent, different lifecycle.
+
+**Signals to react to:**
+- If token-compression techniques are published in detail → benchmark
+  against our `claude_sdk_executor.py` prompt budgeting.
+- If skill crystallization gains traction as a pattern → consider adding
+  a `POST /workspaces/:id/skills/crystallize` endpoint for Starfire
+  agents to persist successful task patterns.
+
+**Last reviewed:** 2026-04-15 · **Stars / activity:** ~1.7k ⭐, Jan 2026
+
+---
+
+### AgentScope — `agentscope-ai/agentscope`
+
+**Pitch:** "Build and run agents you can see, understand and trust."
+
+**Shape:** Python (100%), Apache-2.0, 23.8k ⭐, v1.0.18 March 26, 2026.
+Production-ready multi-agent framework with companion repos:
+`agentscope-runtime` (async-sandbox deployment infra — Browser, GUI,
+Filesystem, Mobile sandboxes) and `agentscope-studio` (visual dev +
+monitoring environment). MCP tool integration as local callable functions.
+A2A protocol support added December 2025. ReAct, HITL, voice, memory, RL
+integration built in. Java port (`agentscope-java`) also active.
+
+**Overlap with us:** MCP + A2A present — same protocol surface as Starfire.
+**MsgHub** formalizes inter-agent message routing (fan-out, filtering,
+pipeline ordering) — maps directly to our inter-workspace delegation system.
+AgentScope-Studio overlaps our Canvas. Async sandboxes mirror our Docker
+workspace runtimes.
+
+**Differentiation:** AgentScope is a **developer framework** (write agent
+code in Python); Starfire is an **agent OS** (configure agents via prompts
+and plugins, no code). No org hierarchy, no role marketplace, no RBAC layer.
+
+**Worth borrowing:**
+- **MsgHub pipeline pattern** — formal message routing between agents with
+  fan-out and filtering; our point-to-point A2A delegation has no routing
+  layer. Adding one would reduce custom code in complex org templates (see
+  filed issue).
+- **Distributed Interrupt Service** — manual task preemption with pluggable
+  state persistence and recovery; cleaner than our `pause` endpoint which
+  has no checkpoint guarantees.
+
+**Terminology collisions:**
+- "pipeline" — AgentScope: ordered sequence of agent interactions. Ours:
+  undefined. Risk of confusion when integrating AgentScope as a runtime.
+- "agent" — Python class instance vs. Docker container.
+
+**Signals to react to:**
+- If AgentScope-Studio ships org-hierarchy multi-agent visualization → direct
+  Canvas competition from a 23.8k-star project with enterprise traction.
+- If MsgHub is published as an open spec → evaluate adopting as our
+  inter-workspace routing standard.
+- Java port gaining traction → enterprise buyers may prefer JVM-native agents;
+  watch for an enterprise-tier AgentScope Cloud announcement.
+
+**Last reviewed:** 2026-04-15 · **Stars / activity:** 23.8k ⭐, v1.0.18 Mar 26 2026
+
+---
+
+### oh-my-claudecode — `Yeachan-Heo/oh-my-claudecode`
+
+**Pitch:** "Teams-first multi-agent orchestration for Claude Code. Zero learning
+curve."
+
+**Shape:** TypeScript/JS (MIT), 29.1k ⭐, v4.11.6 April 2026. A Claude Code
+CLI plugin that orchestrates 19 specialized agents through a staged pipeline:
+`team-plan → team-prd → team-exec → team-verify → team-fix (loop)`. Smart model
+routing deploys Haiku for simple tasks and Opus for complex reasoning. tmux-based
+parallelization runs N agents in parallel on a shared task list. Claims 3–5×
+speedup and 30–50% token savings on large projects. Skill extraction
+automatically captures successful debugging patterns into portable `.md` files.
+
+**Overlap with us:** Both treat "a team of specialized agents coordinating on
+shared work" as the primary product metaphor. Both use role-based agent names.
+Both are Claude Code–native with a skill/plugin file convention. OMC's 19
+specialized agents mirror our tier-2 research/dev/ops role structure.
+
+**Differentiation:** OMC is a **single-machine CLI plugin** — all agents share
+one shell via tmux, no Docker isolation, no RBAC, no visual canvas, no A2A
+between independent processes, no scheduling, no channels. Starfire is a
+**multi-machine agent OS**: real containers, cross-network A2A, visual org chart,
+persistent workspace identity, governance and approval flows. OMC is "parallel
+Claude Code sessions on one laptop"; Starfire is "a company of agents with
+independent compute, memory, and governance."
+
+**Worth borrowing:**
+- **Smart model routing by task complexity** — cheap-model for simple tasks,
+  expensive-model for hard reasoning. Could add this to our `a2a_executor.py`
+  dispatch layer: route tasks tagged `complexity=low` to Haiku and
+  `complexity=high` to Opus within the same workspace.
+- **Staged verification loop** (`exec → verify → fix`) — a clean quality gate
+  before delegation results are accepted. Worth building into our PM agent's
+  delegation lifecycle as an optional `require_verification` flag.
+- **Auto-extracted skill files** from successful task runs — same instinct as
+  GenericAgent's skill crystallization; with two data points it's time to
+  prototype `POST /workspaces/:id/skills/crystallize` for Starfire.
+
+**Terminology collisions:**
+- "team" — OMC's `--team` flag runs N agents in parallel on one machine; our
+  "team" is a persistent org hierarchy across containers. Same word, different
+  runtime scope.
+- "skills" — OMC: auto-extracted `.md` patterns from debugging sessions; ours:
+  installable plugin units.
+
+**Signals to react to:**
+- If OMC adds cross-machine A2A coordination → direct substitution for our
+  orchestration layer in Claude Code shops; 29k stars means fast adoption.
+- If OMC's model-routing heuristics are published → benchmark our delegation
+  cost profile against theirs.
+- If OMC's skill extraction format aligns with `agentskills.io` → our plugin
+  manifest should support the same schema so skills install on both platforms.
+
+**Last reviewed:** 2026-04-15 · **Stars / activity:** 29.1k ⭐, v4.11.6 Apr 2026
+
+---
+
+### Claw Code — `instructkr/claw-code`
+
+**Pitch:** "Public Rust implementation of the claw CLI agent harness — the
+fastest repo in history to surpass 100K stars."
+
+**Shape:** Rust (96%) + Python helpers (MIT/community), 185k ⭐, 787 commits.
+CLI agent harness architected as a clean-room rewrite of Claude Code's agent
+loop (sparked by an accidental npm source-map leak in March 2026). Session
+management, `.claude.json` config, container-first workflows, mock parity
+harness for deterministic testing. API-key agnostic (Anthropic, OpenAI). No
+affiliation with Anthropic. Not to be confused with the original OpenClaw
+project referenced in our `adapters/openclaw/` — that predates this repo by
+over a year.
+
+**Overlap with us:** Claw Code agents run the same workspace-level tasks our
+Claude Code runtime workspaces execute. Our Docker-per-workspace model is
+compatible with Claw Code's container-first workflow design. The mock parity
+harness targets the same testing gap as our `a2a_executor.py` test suite.
+
+**Differentiation:** Claw Code is a **standalone CLI** — no multi-agent
+coordination, no org hierarchy, no A2A, no visual canvas, no scheduling, no
+channels, no RBAC. It gives developers a Claude Code alternative; Starfire
+provides the coordination layer and agent OS on top. The two are
+complementary: a Starfire workspace *could* run Claw Code under the hood
+instead of Claude Code with a new adapter.
+
+**Worth borrowing:**
+- **Mock parity harness** — deterministic test execution against a fake agent
+  runtime. We have limited coverage of `a2a_executor.py` edge-case behavior;
+  this pattern is the right model for our CI adapter tests.
+- **`claw doctor` health-check CLI** — structured pre-flight self-diagnosis.
+  Worth adding a `/workspaces/:id/health` endpoint to our platform API that
+  runs equivalent checks (auth, tool access, memory connectivity, A2A
+  reachability) and returns a structured report.
+
+**Terminology collisions:**
+- "claw" / "openclaw" — the `claw` CLI name surface-overlaps our
+  `adapters/openclaw/` adapter, but they target different projects. Our
+  adapter docs should clarify which claw it targets.
+- "session" — Claw Code: persisted CLI execution context. Ours: informal.
+
+**Signals to react to:**
+- If Claw Code adds multi-agent coordination (spawning + routing multiple
+  `claw` instances) → directly substitutes for our Claude Code adapter in
+  cost-sensitive environments; 185k stars means community momentum is
+  already enormous.
+- If Anthropic officially acknowledges or partners with Claw Code → signals
+  the Claude Code architecture is becoming a public API surface; our adapters
+  should declare explicit version compatibility.
+- If Claw Code's mock harness schema is published → adopt it in our CI for
+  adapter regression testing.
+
+**Last reviewed:** 2026-04-15 · **Stars / activity:** 185k ⭐, community-driven
+
+---
+
+### CowAgent — `zhayujie/CowAgent`
+
+**Pitch:** "AI assistant built on LLMs with autonomous planning, long-term memory, knowledge management, and a skill engine — lighter and more convenient than OpenClaw."
+
+**Shape:** Python (MIT), 43.3k ⭐, actively maintained. Single-agent assistant framework with autonomous task planning, layered persistent memory (core memory → daily memory → dream distillation), and a skill engine that installs from Skill Hub, GitHub, or creates skills via conversation. Multi-platform: WeChat, Feishu, DingTalk, Enterprise WeChat, QQ, and web. Model-agnostic (OpenAI, Claude, Gemini, DeepSeek, Qwen, GLM, Kimi). Built-in tools: file ops, terminal, browser automation, scheduled tasks, multimodal.
+
+**Overlap with us:** Skill engine (install from Hub, GitHub, or create via conversation) is structurally identical to our `plugins/` registry. Layered memory architecture parallels our `agent_memories` table. Multi-platform messenger support mirrors `workspace_channels`. Star trajectory (~43k) means this is a community reference implementation — things it normalizes will become ecosystem expectations.
+
+**Differentiation:** CowAgent is a **single-user personal assistant**, not a multi-agent platform. No org hierarchy, no A2A, no Docker container isolation, no visual canvas, no scheduling, no approval flows. Self-positioned as "lighter than OpenClaw" — emphasizes simplicity over governance. No concept of roles, RBAC, or multi-workspace coordination.
+
+**Worth borrowing:**
+- **Dream distillation memory** — end-of-session LLM pass that condenses short-term daily memory into durable long-term knowledge. Second data point after Hermes. Worth prototyping in our workspace template: a post-session hook that summarizes recent `activity_logs` into `commit_memory`.
+- **Skill Hub discovery UX** — browsable index of installable skills, separate from the runtime. Our `plugins/` registry has no discovery surface; a marketplace landing page would lower the barrier for org admins significantly.
+
+**Terminology collisions:**
+- "skills" — same filesystem convention as gstack, Hermes, OMC, vercel-labs/skills, agentskills.io. Five data points; see filed issue #[skills-standard].
+- "dream distillation" — their term for memory consolidation. Should be explicitly named in our memory model docs.
+
+**Signals to react to:**
+- If CowAgent adds multi-agent A2A support → closes its main gap; 43k stars = fast adoption.
+- If Skill Hub gains an open submission API → publish our plugins there (cross-install opportunity).
+- If "lighter than OpenClaw" attracts OpenClaw's user base → check whether our `adapters/openclaw/` users migrate and whether the adapter needs updating.
+
+**Last reviewed:** 2026-04-15 · **Stars / activity:** 43.3k ⭐, trending Apr 15 2026
+
+---
+
+### vercel-labs/open-agents — `vercel-labs/open-agents`
+
+**Pitch:** "An open-source template for building cloud agents — from prompt to code changes without keeping your laptop involved."
+
+**Shape:** TypeScript 99%, MIT, 2.5k ⭐, pushed April 15 2026 (brand new). Reference architecture for a cloud-hosted coding agent with three-layer separation: (1) **Web app** — Next.js, auth, sessions, streaming chat UI; (2) **Agent workflow** — durable multi-step execution via Vercel Workflow SDK, runs *outside* the sandbox; (3) **Sandbox** — isolated VM with filesystem, shell, git, dev servers, and snapshot-based resumption. Agent interacts with the sandbox exclusively through tool calls (file read/edit, search, shell). Auto-commit, push, and PR creation built in. Companion repos: `vercel-labs/skills` (installable skills standard) and `vercel-labs/agent-browser` (browser automation CLI).
+
+**Overlap with us:** Three-layer stack (web UI / agent workflow / sandbox) maps directly to Starfire's Canvas / workspace process / Docker container. Durable workflow with snapshot-resume mirrors our `pause` / `resume` lifecycle. The `vercel-labs/skills` standard is the fifth data point in the converging filesystem skills convention (gstack, Hermes, OMC, CowAgent, agentskills.io). Repo integration (clone, branch, PR) overlaps our DevOps workspace role.
+
+**Differentiation:** open-agents is a **single-agent cloud coding template** — no org hierarchy, no A2A, no canvas, no scheduling, no channels, no RBAC. Designed to be forked, not operated as a platform. Workspaces are ephemeral-by-design; Starfire workspaces are persistent identities with memory, roles, and governance. Vercel infrastructure is the implicit target; Starfire is infra-agnostic and multi-runtime.
+
+**Worth borrowing:**
+- **Agent-outside-sandbox** execution model — agent process has zero direct filesystem access and must use tool calls to interact with the sandbox. Cleaner security boundary than our claude-code runtime which runs inside the container. Worth evaluating as a "strict isolation mode" for DevOps workspace template.
+- **Snapshot-based sandbox resumption** — sandbox state is snapshotted and resumed rather than kept warm. Could reduce idle container compute for infrequently-triggered workspaces (nightly audits, scheduled reports).
+- **`vercel-labs/skills` format** — see filed issue for aligning our plugin manifest.
+
+**Terminology collisions:**
+- "sandbox" — their VM execution layer; our Docker container per workspace. Same concept, different scope.
+- "workflow" — their durable execution run; ours is informal. No runtime collision but docs should be unambiguous.
+- "skills" — `vercel-labs/skills` uses the same filesystem convention as four other projects. Fifth data point.
+
+**Signals to react to:**
+- If Vercel adds multi-agent A2A → they have infra distribution + developer mindshare to become a serious platform competitor; track their roadmap issues closely.
+- If `vercel-labs/skills` is published as a formal spec → immediate priority to align our plugin manifest (see filed issue).
+- If open-agents crosses 10k ⭐ → Vercel distribution flywheel; add a "deploy to Vercel" option to our `workspace-template` to capture adjacent users.
+
+**Last reviewed:** 2026-04-15 · **Stars / activity:** 2.5k ⭐, pushed Apr 15 2026
+
+---
+
+### claude-mem — `thedotmack/claude-mem`
+
+**Pitch:** "Automatically captures everything Claude does during your coding sessions, compresses it with AI, and reuses that context in future sessions."
+
+**Shape:** TypeScript 83%, AGPL-3.0, 57.5k ⭐. Claude Code plugin installed via `npx claude-mem install`. Five lifecycle hooks (SessionStart, UserPromptSubmit, PostToolUse, Stop, SessionEnd) capture all tool usage automatically. AI compresses captures into semantic summaries stored in SQLite + Chroma vector DB. Hybrid semantic/keyword search. Three-layer progressive disclosure for retrieval: `search` (compact index, ~50–100 tokens) → `timeline` (chronological context) → `get_observations` (full detail on demand). Worker service on port 37777 with web UI. Also supports Gemini CLI and OpenCode.
+
+**Overlap with us:** Directly targets the compaction problem our Holaboss entry references. Our `workspace-template/hooks/` has stub lifecycle hooks; claude-mem shows the full production pattern. Chroma vector search is an alternative to our DB-only `agent_memories`. The 3-layer retrieval pattern applies to our `recall_memory` MCP tool.
+
+**Differentiation:** Single-session plugin, not a multi-agent platform. No org hierarchy, no A2A, no canvas, no scheduling. AGPL-3.0 is a **commercial risk** — any product incorporating it must open-source. Evaluate for inspiration, not direct adoption.
+
+**Worth borrowing:**
+- **3-layer progressive disclosure** — index → timeline → full detail on demand. Apply to `recall_memory`: return a compact index first, fetch full records only when agent requests them. Significant token savings.
+- **Five lifecycle hooks** — exact hook shape needed in `workspace-template/hooks/`. Copy the names and contract as our hook standard.
+
+**Terminology collisions:**
+- "session" — their capture unit; ours is informal. No hard collision.
+- "observations" — their raw captured tool events. Our `activity_logs` is the equivalent.
+
+**Signals to react to:**
+- If claude-mem adds cross-workspace memory sharing → overlaps our TEAM-scoped `agent_memories`; evaluate as a memory backend.
+- If a permissive-licensed fork appears → reassess for direct adoption in `workspace-template/`.
+- 57k stars on a Claude Code plugin is the largest signal yet that session persistence is the #1 pain point in our target user base.
+
+**Last reviewed:** 2026-04-15 · **Stars / activity:** 57.5k ⭐, trending today
+
+---
+
+### Google Agent Development Kit — `google/adk-python`
+
+**Pitch:** "An open-source, code-first Python toolkit for building, evaluating, and deploying sophisticated AI agents with flexibility and control."
+
+**Shape:** Python (Apache-2.0), ~8.2k ⭐, v1.0.0 stable (2026). Google's official agent framework. Supports LLM, workflow, and custom agent types in flexible hierarchies. Native A2A protocol integration. MCP as both client and server. HITL tool confirmation flow. Session rewind (roll back to any prior invocation state). Vertex AI Code Execution Sandbox for agent-generated code. Deployment target: Agent Engine on Google Cloud. Gemini-first but model-agnostic.
+
+**Overlap with us:** A2A support means ADK agents can join our mesh as first-class peers — our `a2a_executor.py` should be tested against ADK's A2A client. MCP client/server mirrors our `mcp-server` surface. HITL confirmation maps to `POST /workspaces/:id/approvals`. Multi-agent hierarchies are the same architectural thesis as our parent/child workspace model. Agent Engine is a direct GCP-native alternative deployment path for our target segment.
+
+**Differentiation:** ADK is a **developer SDK with a GCP deployment backend** — no visual canvas, no org marketplace, no role-based plugin registry, no WebSocket org chart, no channels, no RBAC governance. Agents are Python code objects; Starfire workspaces are prompt-and-YAML configured. Google targets GCP-native enterprise; Starfire targets developers wanting a no-code agent company.
+
+**Worth borrowing:**
+- **Session rewind** — roll back agent state to before a previous invocation, analogous to git checkout on agent history. Our `pause`/`resume` has no rollback; this would be high value for debugging failed delegation chains.
+- **Formal callback system** for intercepting all tool calls — more structured than our ad-hoc hooks in `a2a_executor.py`.
+
+**Terminology collisions:**
+- "agent" — ADK: a Python class with declared tools and model. Ours: a Docker container. Same word, very different runtime model.
+- "plugin" / "skill" — ADK uses neither; they say "tool" and "extension." No collision, but our docs should be explicit when discussing ADK integrations.
+
+**Signals to react to:**
+- If ADK ships a visual canvas for multi-agent org hierarchies → direct Canvas competition from Google's distribution.
+- If ADK's A2A samples become the de facto reference → audit `a2a_executor.py` for compatibility gaps immediately.
+- If Agent Engine pricing is announced below our self-hosted cost → GCP lock-in risk for cost-sensitive segment; position Starfire's infra-agnosticism harder.
+
+**Last reviewed:** 2026-04-15 · **Stars / activity:** ~8.2k ⭐, v1.0.0 stable 2026
+
+---
+
+### Bifrost — `maximhq/bifrost`
+
+**Pitch:** "Fastest enterprise AI gateway — 50× faster than LiteLLM, unified access to 15+ LLM providers with adaptive load balancing, guardrails, and MCP integration at <100µs overhead."
+
+**Shape:** Go 73% + TS 19%, Apache-2.0, 3.8k ⭐, 1,457+ releases, actively maintained. Transparent reverse proxy between agent code and LLM providers. Single OpenAI-compatible API abstracts 15+ providers (OpenAI, Anthropic, Bedrock, Vertex, Azure, Cerebras, Cohere, Mistral, Ollama, Groq). Core features: provider failover with zero downtime, semantic response caching, MCP integration for external tool access, per-key load balancing, budget management, rate limiting, access control. Enterprise: SSO, HashiCorp Vault, Prometheus metrics, distributed tracing, multi-node clustering. Deploy via npx, Docker, or Go SDK.
+
+**Overlap with us:** MCP integration means Bifrost can sit between Starfire workspaces and their LLM providers — a Starfire org could route all LLM calls through Bifrost for cost control, failover, and observability. Budget management + rate limiting maps directly to per-workspace cost governance. Semantic caching reduces token spend on repeated delegation patterns (eco-watch, scheduled audits). Prometheus + distributed tracing complement our `activity_logs`.
+
+**Differentiation:** Bifrost is **infrastructure middleware**, not an agent framework. No agent identity, no memory, no multi-agent coordination, no workspace concept, no canvas, no scheduling. The right model: Bifrost is to LLM providers what an API gateway is to microservices — Starfire runs on top of it, not instead of it. Fully complementary.
+
+**Worth borrowing:**
+- **Semantic response caching** — cache LLM responses by semantic similarity. Our workspaces make near-identical calls on every run (system prompts, recurring queries); caching could cut cost 20–40% on predictable workflows.
+- **Provider failover** — automatic reroute to Bedrock/Vertex when Anthropic is degraded. Our workspaces have no LLM fallback today; a Bifrost adapter in `workspace-template/` would give every workspace failover for free.
+
+**Terminology collisions:**
+- "plugin architecture" — Bifrost: middleware plugins for their gateway pipeline. Ours: installable workspace add-ons. Different scope.
+- "guardrails" — Bifrost: LLM response filtering. Ours: undefined. Disambiguate in docs when describing integrations.
+
+**Signals to react to:**
+- If Bifrost adds agent identity or session tracking → shifts from gateway toward platform; reassess.
+- If Bifrost's MCP integration expands to full MCP gateway (not just client) → overlaps our `mcp-server` tool surface.
+- "Deploy Bifrost in front of your Starfire org for failover + cost control" is a compelling enterprise pitch — consider a `workspace-template/adapters/bifrost/` adapter as a low-effort high-value addition.
+
+**Last reviewed:** 2026-04-15 · **Stars / activity:** 3.8k ⭐, Apache-2.0, active
+
+---
+
+### Claude Agent SDK — `anthropics/claude-agent-sdk-python`
+
+**Pitch:** "Programmatic access to Claude Code — build automated agents, define in-process custom tools, intercept behaviour with hooks, and integrate MCP servers, all in Python."
+
+**Shape:** Python (MIT), 6.3k ⭐, actively maintained. Wraps the Claude Code CLI for programmatic use. Two APIs: `query()` (async generator, fire-and-forget) and `ClaudeSDKClient` (interactive session). Custom tools via `@tool` decorator compiled into in-process MCP servers — no subprocess overhead. `HookMatcher` intercepts `PreToolUse`/`PostToolUse` with deny decisions. Supports both in-process and external subprocess MCP servers. A2A: Claude can invoke peer Claude agents and integrate results. Claude Code CLI auto-bundled. TypeScript SDK also available (`anthropics/claude-agent-sdk-typescript`).
+
+**Overlap with us:** This is the upstream API our `claude_sdk_executor.py` informally wraps. `ClaudeAgentOptions` fields (system_prompt, cwd, allowed_tools, permission_mode, max_turns, mcp_servers, hooks) map 1:1 to our workspace `config.yaml`. In-process MCP servers are what our `mcp_server.py` provides. The `HookMatcher` pattern is a more formal version of our `workspace-template/hooks/` scripts.
+
+**Differentiation:** Single-agent programmatic library, not a multi-agent platform. No org hierarchy, no workspace registry, no canvas, no A2A mesh (only peer-to-peer Claude-to-Claude), no scheduling, no channels, no RBAC. It's the engine; Starfire is the car.
+
+**Worth borrowing:**
+- **In-process MCP servers** — `create_sdk_mcp_server()` eliminates subprocess startup latency. Migrate `mcp_server.py` to in-process to remove a class of startup bugs.
+- **`HookMatcher` semantics** — named matchers keyed by lifecycle event with `permissionDecision: "deny"`. Adopt as the hook contract in `workspace-template/hooks/` so contributors familiar with the SDK find a compatible API.
+- **`ClaudeAgentOptions` field set** — treat as the canonical list of tunable Claude Code parameters; audit our `config.yaml` against it, gaps are missing features.
+
+**Terminology collisions:**
+- "hooks" — SDK: `HookMatcher` objects. Ours: bash scripts in `hooks/`. Same concept, different implementation; bridge in docs.
+- "tools" — SDK: MCP-backed Python functions. Ours: skills/plugins. Careful in any doc that mentions both.
+
+**Signals to react to:**
+- If Anthropic releases SDK v1.0 with stable API → `claude_sdk_executor.py` should target this explicitly rather than the bare CLI.
+- If A2A support expands from peer-to-peer to mesh routing → Starfire's A2A layer may become redundant for Claude-only orgs; reassess.
+- TypeScript SDK parity → evaluate as basis for our Node.js workspace runtime.
+
+**Last reviewed:** 2026-04-15 · **Stars / activity:** 6.3k ⭐, MIT, active
+
+---
+
+### OpenAI Agents SDK — `openai/openai-agents-python`
+
+**Pitch:** "A lightweight, powerful framework for multi-agent workflows — provider-agnostic, MCP-native, with built-in tracing, guardrails, HITL, and sandbox agents."
+
+**Shape:** Python 99.7%, MIT, 20.8k ⭐, v0.14.1 April 15 2026 (updated today). Core primitives: `Agent` (instructions + tools + guardrails + handoffs), `Runner`, `Handoff` (agent-to-agent delegation), `Tool` (function or MCP endpoint), `Guardrail` (input/output validation). **Sandbox agents** for persistent workspace operations across extended tasks. Voice/realtime via `gpt-realtime-1.5`. Session management. HITL mechanisms. Provider-agnostic (100+ LLMs).
+
+**Overlap with us:** Handoffs = our `delegate_task`. Agents-as-tools = our workspace-as-tool model. MCP native = our `mcp-server`. Built-in tracing = our `activity_logs` + Langfuse. Sandbox agents = our Docker workspaces. Guardrails = our `@requires_approval` gate. The conceptual model is nearly identical; the difference is execution infrastructure.
+
+**Differentiation:** Agents run as Python objects in one process, not in separate containers with independent memory, scheduling, and channels. No visual canvas, no org marketplace, no WebSocket org chart, no RBAC governance, no Slack/Telegram/Discord integrations, no persistent workspace identity outside a running script.
+
+**Worth borrowing:**
+- **`Guardrail` as a first-class agent-level primitive** — input + output validation declared at the agent, not as external middleware. Move our approval flow toward declarative agent-level guardrails in `config.yaml`.
+- **Tracing default-on** — built-in distributed tracing out of the box. Make Langfuse tracing default-on in `workspace-template/` rather than opt-in.
+
+**Terminology collisions:**
+- "handoff" — their agent delegation primitive. Ours: `delegate_task`. Same concept, different name — confusing in mixed codebases.
+- "sandbox" — their persistent long-running agent workspace. Ours: Docker container per workspace. Doc disambiguation required.
+- "agent" — in-process Python object vs. Docker container. Same word, very different operational model.
+
+**Signals to react to:**
+- If sandbox agents gain persistent cross-session memory → closes the biggest gap with Starfire; watch CHANGELOG closely.
+- If OpenAI ships a canvas for multi-agent org hierarchy → direct Canvas competition from the framework with the most enterprise mindshare.
+- If OpenAI publishes hosted "deploy SDK agents as a service" → Starfire's value narrows to governance, RBAC, and org-hierarchy; sharpen that messaging now.
+
+**Last reviewed:** 2026-04-15 · **Stars / activity:** 20.8k ⭐, v0.14.1 April 15 2026
+
+---
+
+### Gas Town — `gastownhall/gastown`
+
+**Pitch:** "LLM orchestrator that lets you manage dozens of Claude Code instances at once while they make independent progress towards stated goals."
+
+**Shape:** Go 95% (MIT), 14.1k ⭐, v1.0.0 April 3 2026. Hierarchical "town" metaphor: a **Mayor** (chief-of-staff Claude Code instance) breaks goals into **beads** (tracked issues), assigns them to **polecats** (worker agents) via **convoys** (work bundles). State persists through git worktrees (hooks) — agents survive restarts. Three-tier health monitoring: **Witness** (per-rig), **Deacon** (cross-rig), **Dogs** (infra maintenance). Web dashboard + real-time feed. **Wasteland federation** for cross-town coordination. OTEL telemetry. Ships as Homebrew, npm, or Docker Compose.
+
+**Overlap with us:** Mayor/crew hierarchy ≈ our PM/Research Lead/Dev Lead org chart. Git-backed hook persistence addresses the same context-loss problem as our `agent_memories`. Wasteland federation ≈ inter-org A2A. Deacon patrol loop ≈ our heartbeat monitor. Ships **"Molecule workflow templates"** as a named template — direct namespace collision with `Molecule-AI/molecule-monorepo` that needs investigation.
+
+**Differentiation:** Single-machine tmux-based — all polecats share one host, no Docker isolation per agent, no RBAC, no visual canvas, no external scheduling, no channels, no MCP. Starfire is multi-machine: independent containers, cross-network A2A, visual org chart, governance, and channel integrations.
+
+**Worth borrowing:**
+- **Three-tier health patrol** (Witness/Deacon/Dogs): per-workspace, cross-workspace, and infra-maintenance layers with auto-recovery. More structured than our single heartbeat check; worth adding structured patrol hooks to `workspace-template/` (see filed issue).
+- **Bead ID convention** (`gt-abc12`) for tracked work units — cleaner than our free-text `current_task` heartbeat field.
+- **Seance** (session discovery + continuation after restart) — git-backed approach is more durable than our DB-only workspace resume state.
+
+**Terminology collisions:**
+- "convoy" — Gastown: bundle of beads toward a goal. Ours: undefined. No collision.
+- "rig" — Gastown: project container wrapping a git repo. Ours: undefined.
+- **"Molecule workflow templates"** — Gastown ships templates under this name; our monorepo is `Molecule-AI`. **Branding collision: investigate immediately.**
+
+**Signals to react to:**
+- "Molecule workflow templates" naming — confirm whether this references our platform or is independently named; if independent, address in marketing copy.
+- If Gastown adds Docker isolation and cross-host A2A → direct platform competitor at 14k ⭐; Wasteland federation could substitute for our A2A mesh.
+- If Wasteland spec is published as an open protocol → evaluate alongside A2A.
+- v1.0 stable + Steve Yegge authorship = high community velocity; watch CHANGELOG.
+- **⚠️ HN thread (Apr 15): "Does Gas Town 'steal' usage from users' LLM credits to improve itself?"** — active community concern about Gas Town silently consuming user API credits for self-improvement. Track resolution; if confirmed, note as a trust/ethics anti-pattern to explicitly avoid in our own `a2a_executor.py` and audit hooks.
+
+**Last reviewed:** 2026-04-15 · **Stars / activity:** 14.1k ⭐, v1.0.0 April 3 2026
+
+---
+
+### Background Agents — `ColeMurray/background-agents`
+
+**Pitch:** "An open-source background agents coding system — run coding agents autonomously while you focus elsewhere."
+
+**Shape:** TypeScript 80% + Python 16% (MIT), 1.5k ⭐, trending Apr 15 2026. Three-layer: **Control plane** (Cloudflare Workers + Durable Objects, per-session SQLite, WebSocket hub), **Data plane** (Modal sandboxes — isolated dev env per session), **Clients** (Web, Slack, GitHub, Linear, webhooks). Sub-task spawning creates child sessions in parallel on separate sandboxes. Multi-model: Claude Haiku/Sonnet/Opus 4.x, OpenAI GPT-5/Codex, OpenCode Zen. Cron automations, Sentry alert triggers, GitHub PR auto-review, Linear issue triggers. Single-tenant.
+
+**Overlap with us:** Cloudflare Durable Objects as per-agent state ≈ our PostgreSQL workspace rows. Modal sandboxes ≈ our Docker containers. `spawn-task` ≈ `delegate_task`. Slack/GitHub/Linear/webhook triggers ≈ `workspace_channels`. Cron ≈ `workspace_schedules`.
+
+**Differentiation:** No MCP, no A2A protocol, no org hierarchy or RBAC, no persistent agent identity beyond a session, no visual canvas. Cloudflare + Modal is not self-hostable as-is. Single-tenant only. Architectural pattern similarity rather than platform equivalence.
+
+**Worth borrowing:**
+- **Modal snapshot cold-start** — second data point (after Trigger.dev warm pools) that snapshot-based startup is the emerging standard for agent sandboxes; worth prototyping for our claude-code container startup latency.
+- **JSONPath webhook condition filtering** — webhooks fire only when JSONPath conditions match. Our `workspace_channels` fires on every POST; adding this to `platform/internal/handlers/channels.go` would let admins route selectively. Low-effort, high-value.
+- **Per-user model preference on Slack trigger** — users override the workspace model in the Slack mention. Good UX pattern for our channel config.
+
+**Terminology collisions:**
+- "session" — their atomic sandbox run. Ours: informal.
+- "sandbox" — their Modal VM. Ours: Docker container per workspace.
+
+**Signals to react to:**
+- If background-agents adds MCP or A2A → bridges to mesh territory; watch commits.
+- If Cloudflare Workers + Modal becomes the default reference stack for "serverless coding agents" → our Docker Compose story needs a companion serverless guide.
+- Growth 1.5k → 5k ⭐ signals mainstream traction in the "background coding agent" category.
+
+**Last reviewed:** 2026-04-15 · **Stars / activity:** 1.5k ⭐, trending Apr 15 2026
+
+---
+
+### AI Hedge Fund — `virattt/ai-hedge-fund`
+
+**Pitch:** "An AI Hedge Fund Team — 19 specialist AI agents simulating legendary investors to analyse stocks and generate trade recommendations."
+
+**Shape:** Python 60% + TypeScript 36% (MIT), 55k ⭐ and accelerating (8.7k → 55k in ~14 months). **LangGraph** manages agent state and flow; a **React Flow visual editor** lets users drag-and-drop agent nodes to compose custom investment committees. 19-agent system: 14 strategy agents (Buffett, Munger, Cathie Wood, Michael Burry, etc.), 4 analysis agents (valuation, sentiment, fundamentals, technicals), 1 risk/portfolio coordinator. All agents share a typed `AgentState` dict. Educational only — explicitly does not execute real trades.
+
+**Overlap with us:** LangGraph is our first-class runtime adapter. The React Flow drag-and-drop canvas for composing agent committees overlaps directly with our Canvas metaphor — users are building org-chart-style agent teams in the same visual paradigm we offer. The "14 specialists → 4 analysts → 1 coordinator" topology is identical to our org-template shape (engineers → leads → PM).
+
+**Differentiation:** Domain-specific vertical demo, not general agent infra. No A2A, no MCP, no workspace persistence, no RBAC, no channels, no scheduling. Not deployable as a platform — the overlap is architectural *metaphor*, not direct competition.
+
+**Worth borrowing:**
+- **Drag-and-drop agent committee editor** (React Flow) — users pick specialist roles from a palette and wire them into a custom org graph. This is the Canvas interaction model we should target: compose-then-run, not view-only. Natural next step for our Canvas.
+- **Typed `AgentState` shared dict** — all LangGraph agents share one explicit state schema. Our A2A delegation passes freeform text; a typed shared-state schema at the workspace run level would improve auditability and reduce hallucinated handoffs.
+
+**Terminology collisions:**
+- "committee" — their agent group term. We say "team" or "org." No collision, different domain.
+
+**Signals to react to:**
+- 55k ⭐ on a vertical demo is the strongest signal we have that the "AI company of specialist agents" metaphor resonates far beyond our immediate developer audience — validates our core product thesis.
+- If a production-ready fork appears (real trading, live positions) → Starfire "investment committee" org-template becomes immediately valuable (see filed issue).
+- If LangGraph ships breaking 2.x API changes → our LangGraph adapter faces identical breakage; monitor their migration guides in sync with this repo.
+- If the React Flow editor is extracted as a standalone embeddable component → evaluate directly for our Canvas layer.
+
+**Last reviewed:** 2026-04-15 · **Stars / activity:** 55k ⭐, trending Apr 15 2026
+
+---
+
 ## Candidates to add (backlog)
 
 Short-list of projects to write up next time someone has an hour:
@@ -442,7 +971,6 @@ Short-list of projects to write up next time someone has an hour:
 - **LangGraph** (`langchain-ai/langgraph`) — we already support it as a
   runtime; worth a full entry for how their graph model compares to our
   workspace hierarchy.
-- **AutoGen** (`microsoft/autogen`) — ditto, we adapt it.
 - **CrewAI** (`crewaiinc/crewai`) — ditto.
 - **DeepAgents** (`langchain-ai/deepagents`) — ditto; particularly their
   sub-agent feature that collides with our "skills" word.
@@ -453,3 +981,32 @@ Short-list of projects to write up next time someone has an hour:
   case we want agent-to-agent discovery beyond a single org.
 - **Temporal** (`temporalio/temporal`) — we already integrate; entry
   should cover when to lean on Temporal vs our in-house scheduling.
+- **vercel-labs/skills** (`vercel-labs/skills`) — Vercel's companion skills
+  standard to open-agents. Now that open-agents is a full entry, this repo
+  deserves its own write-up as a pure skills-registry standard (separate
+  from the agent runtime).
+- **Block Goose** (`block/goose`) — local-first AI agent with MCP support
+  from Block (Square). ~4.9k ⭐. Relevant for MCP tool-use patterns and
+  local-execution model.
+- **backnotprop/plannotator** — visual annotation tool for reviewing coding
+  agent plans. ~4.2k ⭐. Relevant to our Canvas approval flow and plan
+  review UX.
+- **ressl/mcp-firewall** (`ressl/mcp-firewall`) — MCP security gateway:
+  policy enforcement (OPA/Rego), threat detection (50+ injection patterns,
+  PII, secrets), cryptographically signed audit trail, SIEM export,
+  DORA/FINMA/SOC 2 compliance reports. AGPL-3.0, Python, only 5 ⭐ today
+  but the concept maps directly to our compliance plugin gap (issue #256).
+  Revisit when stars grow or a permissive fork appears.
+- **Fission-AI/OpenSpec** (`Fission-AI/OpenSpec`) — spec-driven development
+  for AI coding assistants. 40.2k ⭐, supports 21 tools incl. Claude Code.
+  Delta specs for brownfield. Not core agent-infra but the planning artifact
+  pattern (proposal.md + specs + design.md + tasks.md) is relevant to our
+  PM workspace planning flow.
+- **Google Colab MCP Server** (`googlecolab/colab-mcp`) — official Google MCP
+  server bridging any MCP-compatible agent to a Google Colab cloud session.
+  Apache-2.0, Python, 504 ⭐, v1.0.2 March 27 2026. Tools: create/execute/
+  reorganise cells, manage pip deps. Works with Claude Code and Gemini CLI.
+  No external contributions accepted (internal Google project). Relevant when
+  we want to give DevOps or Research workspaces on-demand cloud compute
+  without managing GPU infra — a Starfire workspace could call Colab via
+  MCP instead of spinning up a Modal sandbox.
