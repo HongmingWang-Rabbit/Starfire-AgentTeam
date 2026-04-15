@@ -524,6 +524,54 @@ full team-coordination platform.
 
 ---
 
+### AgentScope — `agentscope-ai/agentscope`
+
+**Pitch:** "Build and run agents you can see, understand and trust."
+
+**Shape:** Python (100%), Apache-2.0, 23.8k ⭐, v1.0.18 March 26, 2026.
+Production-ready multi-agent framework with companion repos:
+`agentscope-runtime` (async-sandbox deployment infra — Browser, GUI,
+Filesystem, Mobile sandboxes) and `agentscope-studio` (visual dev +
+monitoring environment). MCP tool integration as local callable functions.
+A2A protocol support added December 2025. ReAct, HITL, voice, memory, RL
+integration built in. Java port (`agentscope-java`) also active.
+
+**Overlap with us:** MCP + A2A present — same protocol surface as Starfire.
+**MsgHub** formalizes inter-agent message routing (fan-out, filtering,
+pipeline ordering) — maps directly to our inter-workspace delegation system.
+AgentScope-Studio overlaps our Canvas. Async sandboxes mirror our Docker
+workspace runtimes.
+
+**Differentiation:** AgentScope is a **developer framework** (write agent
+code in Python); Starfire is an **agent OS** (configure agents via prompts
+and plugins, no code). No org hierarchy, no role marketplace, no RBAC layer.
+
+**Worth borrowing:**
+- **MsgHub pipeline pattern** — formal message routing between agents with
+  fan-out and filtering; our point-to-point A2A delegation has no routing
+  layer. Adding one would reduce custom code in complex org templates (see
+  filed issue).
+- **Distributed Interrupt Service** — manual task preemption with pluggable
+  state persistence and recovery; cleaner than our `pause` endpoint which
+  has no checkpoint guarantees.
+
+**Terminology collisions:**
+- "pipeline" — AgentScope: ordered sequence of agent interactions. Ours:
+  undefined. Risk of confusion when integrating AgentScope as a runtime.
+- "agent" — Python class instance vs. Docker container.
+
+**Signals to react to:**
+- If AgentScope-Studio ships org-hierarchy multi-agent visualization → direct
+  Canvas competition from a 23.8k-star project with enterprise traction.
+- If MsgHub is published as an open spec → evaluate adopting as our
+  inter-workspace routing standard.
+- Java port gaining traction → enterprise buyers may prefer JVM-native agents;
+  watch for an enterprise-tier AgentScope Cloud announcement.
+
+**Last reviewed:** 2026-04-15 · **Stars / activity:** 23.8k ⭐, v1.0.18 Mar 26 2026
+
+---
+
 ## Candidates to add (backlog)
 
 Short-list of projects to write up next time someone has an hour:
