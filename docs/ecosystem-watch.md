@@ -822,6 +822,62 @@ instead of Claude Code with a new adapter.
 
 ---
 
+### Claude Agent SDK — `anthropics/claude-agent-sdk-python`
+
+**Pitch:** "Programmatic access to Claude Code — build automated agents, define in-process custom tools, intercept behaviour with hooks, and integrate MCP servers, all in Python."
+
+**Shape:** Python (MIT), 6.3k ⭐, actively maintained. Wraps the Claude Code CLI for programmatic use. Two APIs: `query()` (async generator, fire-and-forget) and `ClaudeSDKClient` (interactive session). Custom tools via `@tool` decorator compiled into in-process MCP servers — no subprocess overhead. `HookMatcher` intercepts `PreToolUse`/`PostToolUse` with deny decisions. Supports both in-process and external subprocess MCP servers. A2A: Claude can invoke peer Claude agents and integrate results. Claude Code CLI auto-bundled. TypeScript SDK also available (`anthropics/claude-agent-sdk-typescript`).
+
+**Overlap with us:** This is the upstream API our `claude_sdk_executor.py` informally wraps. `ClaudeAgentOptions` fields (system_prompt, cwd, allowed_tools, permission_mode, max_turns, mcp_servers, hooks) map 1:1 to our workspace `config.yaml`. In-process MCP servers are what our `mcp_server.py` provides. The `HookMatcher` pattern is a more formal version of our `workspace-template/hooks/` scripts.
+
+**Differentiation:** Single-agent programmatic library, not a multi-agent platform. No org hierarchy, no workspace registry, no canvas, no A2A mesh (only peer-to-peer Claude-to-Claude), no scheduling, no channels, no RBAC. It's the engine; Starfire is the car.
+
+**Worth borrowing:**
+- **In-process MCP servers** — `create_sdk_mcp_server()` eliminates subprocess startup latency. Migrate `mcp_server.py` to in-process to remove a class of startup bugs.
+- **`HookMatcher` semantics** — named matchers keyed by lifecycle event with `permissionDecision: "deny"`. Adopt as the hook contract in `workspace-template/hooks/` so contributors familiar with the SDK find a compatible API.
+- **`ClaudeAgentOptions` field set** — treat as the canonical list of tunable Claude Code parameters; audit our `config.yaml` against it, gaps are missing features.
+
+**Terminology collisions:**
+- "hooks" — SDK: `HookMatcher` objects. Ours: bash scripts in `hooks/`. Same concept, different implementation; bridge in docs.
+- "tools" — SDK: MCP-backed Python functions. Ours: skills/plugins. Careful in any doc that mentions both.
+
+**Signals to react to:**
+- If Anthropic releases SDK v1.0 with stable API → `claude_sdk_executor.py` should target this explicitly rather than the bare CLI.
+- If A2A support expands from peer-to-peer to mesh routing → Starfire's A2A layer may become redundant for Claude-only orgs; reassess.
+- TypeScript SDK parity → evaluate as basis for our Node.js workspace runtime.
+
+**Last reviewed:** 2026-04-15 · **Stars / activity:** 6.3k ⭐, MIT, active
+
+---
+
+### OpenAI Agents SDK — `openai/openai-agents-python`
+
+**Pitch:** "A lightweight, powerful framework for multi-agent workflows — provider-agnostic, MCP-native, with built-in tracing, guardrails, HITL, and sandbox agents."
+
+**Shape:** Python 99.7%, MIT, 20.8k ⭐, v0.14.1 April 15 2026 (updated today). Core primitives: `Agent` (instructions + tools + guardrails + handoffs), `Runner`, `Handoff` (agent-to-agent delegation), `Tool` (function or MCP endpoint), `Guardrail` (input/output validation). **Sandbox agents** for persistent workspace operations across extended tasks. Voice/realtime via `gpt-realtime-1.5`. Session management. HITL mechanisms. Provider-agnostic (100+ LLMs).
+
+**Overlap with us:** Handoffs = our `delegate_task`. Agents-as-tools = our workspace-as-tool model. MCP native = our `mcp-server`. Built-in tracing = our `activity_logs` + Langfuse. Sandbox agents = our Docker workspaces. Guardrails = our `@requires_approval` gate. The conceptual model is nearly identical; the difference is execution infrastructure.
+
+**Differentiation:** Agents run as Python objects in one process, not in separate containers with independent memory, scheduling, and channels. No visual canvas, no org marketplace, no WebSocket org chart, no RBAC governance, no Slack/Telegram/Discord integrations, no persistent workspace identity outside a running script.
+
+**Worth borrowing:**
+- **`Guardrail` as a first-class agent-level primitive** — input + output validation declared at the agent, not as external middleware. Move our approval flow toward declarative agent-level guardrails in `config.yaml`.
+- **Tracing default-on** — built-in distributed tracing out of the box. Make Langfuse tracing default-on in `workspace-template/` rather than opt-in.
+
+**Terminology collisions:**
+- "handoff" — their agent delegation primitive. Ours: `delegate_task`. Same concept, different name — confusing in mixed codebases.
+- "sandbox" — their persistent long-running agent workspace. Ours: Docker container per workspace. Doc disambiguation required.
+- "agent" — in-process Python object vs. Docker container. Same word, very different operational model.
+
+**Signals to react to:**
+- If sandbox agents gain persistent cross-session memory → closes the biggest gap with Starfire; watch CHANGELOG closely.
+- If OpenAI ships a canvas for multi-agent org hierarchy → direct Canvas competition from the framework with the most enterprise mindshare.
+- If OpenAI publishes hosted "deploy SDK agents as a service" → Starfire's value narrows to governance, RBAC, and org-hierarchy; sharpen that messaging now.
+
+**Last reviewed:** 2026-04-15 · **Stars / activity:** 20.8k ⭐, v0.14.1 April 15 2026
+
+---
+
 ## Candidates to add (backlog)
 
 Short-list of projects to write up next time someone has an hour:
