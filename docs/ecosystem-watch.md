@@ -795,6 +795,33 @@ instead of Claude Code with a new adapter.
 
 ---
 
+### Bifrost — `maximhq/bifrost`
+
+**Pitch:** "Fastest enterprise AI gateway — 50× faster than LiteLLM, unified access to 15+ LLM providers with adaptive load balancing, guardrails, and MCP integration at <100µs overhead."
+
+**Shape:** Go 73% + TS 19%, Apache-2.0, 3.8k ⭐, 1,457+ releases, actively maintained. Transparent reverse proxy between agent code and LLM providers. Single OpenAI-compatible API abstracts 15+ providers (OpenAI, Anthropic, Bedrock, Vertex, Azure, Cerebras, Cohere, Mistral, Ollama, Groq). Core features: provider failover with zero downtime, semantic response caching, MCP integration for external tool access, per-key load balancing, budget management, rate limiting, access control. Enterprise: SSO, HashiCorp Vault, Prometheus metrics, distributed tracing, multi-node clustering. Deploy via npx, Docker, or Go SDK.
+
+**Overlap with us:** MCP integration means Bifrost can sit between Starfire workspaces and their LLM providers — a Starfire org could route all LLM calls through Bifrost for cost control, failover, and observability. Budget management + rate limiting maps directly to per-workspace cost governance. Semantic caching reduces token spend on repeated delegation patterns (eco-watch, scheduled audits). Prometheus + distributed tracing complement our `activity_logs`.
+
+**Differentiation:** Bifrost is **infrastructure middleware**, not an agent framework. No agent identity, no memory, no multi-agent coordination, no workspace concept, no canvas, no scheduling. The right model: Bifrost is to LLM providers what an API gateway is to microservices — Starfire runs on top of it, not instead of it. Fully complementary.
+
+**Worth borrowing:**
+- **Semantic response caching** — cache LLM responses by semantic similarity. Our workspaces make near-identical calls on every run (system prompts, recurring queries); caching could cut cost 20–40% on predictable workflows.
+- **Provider failover** — automatic reroute to Bedrock/Vertex when Anthropic is degraded. Our workspaces have no LLM fallback today; a Bifrost adapter in `workspace-template/` would give every workspace failover for free.
+
+**Terminology collisions:**
+- "plugin architecture" — Bifrost: middleware plugins for their gateway pipeline. Ours: installable workspace add-ons. Different scope.
+- "guardrails" — Bifrost: LLM response filtering. Ours: undefined. Disambiguate in docs when describing integrations.
+
+**Signals to react to:**
+- If Bifrost adds agent identity or session tracking → shifts from gateway toward platform; reassess.
+- If Bifrost's MCP integration expands to full MCP gateway (not just client) → overlaps our `mcp-server` tool surface.
+- "Deploy Bifrost in front of your Starfire org for failover + cost control" is a compelling enterprise pitch — consider a `workspace-template/adapters/bifrost/` adapter as a low-effort high-value addition.
+
+**Last reviewed:** 2026-04-15 · **Stars / activity:** 3.8k ⭐, Apache-2.0, active
+
+---
+
 ## Candidates to add (backlog)
 
 Short-list of projects to write up next time someone has an hour:
@@ -822,3 +849,14 @@ Short-list of projects to write up next time someone has an hour:
 - **backnotprop/plannotator** — visual annotation tool for reviewing coding
   agent plans. ~4.2k ⭐. Relevant to our Canvas approval flow and plan
   review UX.
+- **ressl/mcp-firewall** (`ressl/mcp-firewall`) — MCP security gateway:
+  policy enforcement (OPA/Rego), threat detection (50+ injection patterns,
+  PII, secrets), cryptographically signed audit trail, SIEM export,
+  DORA/FINMA/SOC 2 compliance reports. AGPL-3.0, Python, only 5 ⭐ today
+  but the concept maps directly to our compliance plugin gap (issue #256).
+  Revisit when stars grow or a permissive fork appears.
+- **Fission-AI/OpenSpec** (`Fission-AI/OpenSpec`) — spec-driven development
+  for AI coding assistants. 40.2k ⭐, supports 21 tools incl. Claude Code.
+  Delta specs for brownfield. Not core agent-infra but the planning artifact
+  pattern (proposal.md + specs + design.md + tasks.md) is relevant to our
+  PM workspace planning flow.
