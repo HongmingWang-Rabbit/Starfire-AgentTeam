@@ -435,6 +435,95 @@ builders; Starfire users are developers building agent companies.
 
 ---
 
+### Microsoft Agent Framework — `microsoft/agent-framework`
+
+**Pitch:** "A framework for building, orchestrating and deploying AI agents
+and multi-agent workflows with support for Python and .NET."
+
+**Shape:** Python + C# (Apache-2.0), 9.5k ⭐, v1.0 April 7, 2026.
+Unifies Semantic Kernel and AutoGen into one production SDK. Graph-based
+orchestration with streaming, checkpointing, and human-in-the-loop.
+DevUI for interactive debugging. Official migration guides from both
+AutoGen and Semantic Kernel.
+
+**Overlap with us:** MCP Registry integration overlaps our `mcp-server`
+tool surface. A2A hosting samples in both Python and .NET overlap
+`a2a_executor.py` directly. Graph-based multi-agent workflows with
+checkpoint/resume mirror our workspace pause/resume lifecycle.
+
+**Differentiation:** Microsoft targets enterprise .NET shops migrating
+existing AutoGen/Semantic Kernel projects. No visual canvas, no org
+hierarchy, no agent marketplace or plugin registry. Agent-framework is a
+**developer SDK** for building agents; Starfire is the **operating system
+for agent teams**.
+
+**Worth borrowing:**
+- **DevUI** for live agent introspection and replay — our Canvas surfaces
+  agent output but has no dev-mode debugger. A debug-mode DevUI would
+  meaningfully improve contributor DX.
+- **Formal middleware layer** for request/response interception — cleaner
+  than our ad hoc hook system; worth formalizing in `a2a_executor.py`.
+
+**Terminology collisions:**
+- "plugin" — agent-framework: tool bundles (Semantic Kernel lineage). Ours:
+  workspace add-ons. Different scopes, same word.
+- "agent" — SDK object with declared role vs. running Docker container.
+
+**Signals to react to:**
+- If they ship a visual canvas for multi-agent org hierarchy → direct
+  Canvas overlap; track their roadmap issues.
+- If A2A samples become a de facto reference implementation → audit our
+  `a2a_executor.py` for compatibility gaps.
+- Our `adapters/autogen/` targets the now-deprecated predecessor; evaluate
+  migrating to target agent-framework instead (see filed issue).
+
+**Last reviewed:** 2026-04-15 · **Stars / activity:** 9.5k ⭐, v1.0 Apr 7 2026
+
+---
+
+### GenericAgent — `lsdefine/GenericAgent`
+
+**Pitch:** "Self-evolving agent achieving full system control with 6× less
+token consumption."
+
+**Shape:** Python (95%), MIT, ~1.7k ⭐, created January 2026. ~3,000
+lines total with a ~100-line core agent loop. Nine atomic tools cover
+browser automation (with session injection), terminal, file ops,
+keyboard/mouse input, screen vision, and ADB. Supports Claude, Gemini,
+Kimi, MiniMax. Multi-frontend: Streamlit, Qt, WeChat, Feishu, DingTalk.
+
+**Overlap with us:** Layered memory (L0–L4) maps conceptually to our
+workspace memory tiers. Skill crystallization — tasks that succeed get
+saved as reusable skills — is the same intent as our plugin install flow.
+
+**Differentiation:** Single-user desktop automation tool, not a
+multi-agent platform. No org hierarchy, no A2A, no cloud deployment.
+Minimal codebase (~100-line loop) is the design goal; Starfire is a
+full team-coordination platform.
+
+**Worth borrowing:**
+- **L0–L4 memory hierarchy** is more explicit than our current memory
+  model — worth adopting as terminology in `AGENTS.md` so contributors
+  can reason about which memory layer to read/write.
+- **6× token-reduction claim**: their prompt compression and skill-reuse
+  approach is worth benchmarking against our claude-code adapter's prompt
+  budgeting, even if the absolute numbers don't transfer.
+
+**Terminology collisions:**
+- "skill" — GenericAgent: a crystallized, reusable task execution workflow.
+  Ours: an installable plugin unit. Similar intent, different lifecycle.
+
+**Signals to react to:**
+- If token-compression techniques are published in detail → benchmark
+  against our `claude_sdk_executor.py` prompt budgeting.
+- If skill crystallization gains traction as a pattern → consider adding
+  a `POST /workspaces/:id/skills/crystallize` endpoint for Starfire
+  agents to persist successful task patterns.
+
+**Last reviewed:** 2026-04-15 · **Stars / activity:** ~1.7k ⭐, Jan 2026
+
+---
+
 ## Candidates to add (backlog)
 
 Short-list of projects to write up next time someone has an hour:
@@ -442,7 +531,6 @@ Short-list of projects to write up next time someone has an hour:
 - **LangGraph** (`langchain-ai/langgraph`) — we already support it as a
   runtime; worth a full entry for how their graph model compares to our
   workspace hierarchy.
-- **AutoGen** (`microsoft/autogen`) — ditto, we adapt it.
 - **CrewAI** (`crewaiinc/crewai`) — ditto.
 - **DeepAgents** (`langchain-ai/deepagents`) — ditto; particularly their
   sub-agent feature that collides with our "skills" word.
@@ -453,3 +541,6 @@ Short-list of projects to write up next time someone has an hour:
   case we want agent-to-agent discovery beyond a single org.
 - **Temporal** (`temporalio/temporal`) — we already integrate; entry
   should cover when to lean on Temporal vs our in-house scheduling.
+- **vercel-labs/open-agents** — Vercel's open-source cloud-agent template;
+  1k GitHub stars gained in a single day (Apr 15). Thin on details yet;
+  revisit next cycle when docs mature.
