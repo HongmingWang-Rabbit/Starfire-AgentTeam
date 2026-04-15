@@ -903,6 +903,7 @@ instead of Claude Code with a new adapter.
 - If Gastown adds Docker isolation and cross-host A2A → direct platform competitor at 14k ⭐; Wasteland federation could substitute for our A2A mesh.
 - If Wasteland spec is published as an open protocol → evaluate alongside A2A.
 - v1.0 stable + Steve Yegge authorship = high community velocity; watch CHANGELOG.
+- **⚠️ HN thread (Apr 15): "Does Gas Town 'steal' usage from users' LLM credits to improve itself?"** — active community concern about Gas Town silently consuming user API credits for self-improvement. Track resolution; if confirmed, note as a trust/ethics anti-pattern to explicitly avoid in our own `a2a_executor.py` and audit hooks.
 
 **Last reviewed:** 2026-04-15 · **Stars / activity:** 14.1k ⭐, v1.0.0 April 3 2026
 
@@ -933,6 +934,33 @@ instead of Claude Code with a new adapter.
 - Growth 1.5k → 5k ⭐ signals mainstream traction in the "background coding agent" category.
 
 **Last reviewed:** 2026-04-15 · **Stars / activity:** 1.5k ⭐, trending Apr 15 2026
+
+---
+
+### AI Hedge Fund — `virattt/ai-hedge-fund`
+
+**Pitch:** "An AI Hedge Fund Team — 19 specialist AI agents simulating legendary investors to analyse stocks and generate trade recommendations."
+
+**Shape:** Python 60% + TypeScript 36% (MIT), 55k ⭐ and accelerating (8.7k → 55k in ~14 months). **LangGraph** manages agent state and flow; a **React Flow visual editor** lets users drag-and-drop agent nodes to compose custom investment committees. 19-agent system: 14 strategy agents (Buffett, Munger, Cathie Wood, Michael Burry, etc.), 4 analysis agents (valuation, sentiment, fundamentals, technicals), 1 risk/portfolio coordinator. All agents share a typed `AgentState` dict. Educational only — explicitly does not execute real trades.
+
+**Overlap with us:** LangGraph is our first-class runtime adapter. The React Flow drag-and-drop canvas for composing agent committees overlaps directly with our Canvas metaphor — users are building org-chart-style agent teams in the same visual paradigm we offer. The "14 specialists → 4 analysts → 1 coordinator" topology is identical to our org-template shape (engineers → leads → PM).
+
+**Differentiation:** Domain-specific vertical demo, not general agent infra. No A2A, no MCP, no workspace persistence, no RBAC, no channels, no scheduling. Not deployable as a platform — the overlap is architectural *metaphor*, not direct competition.
+
+**Worth borrowing:**
+- **Drag-and-drop agent committee editor** (React Flow) — users pick specialist roles from a palette and wire them into a custom org graph. This is the Canvas interaction model we should target: compose-then-run, not view-only. Natural next step for our Canvas.
+- **Typed `AgentState` shared dict** — all LangGraph agents share one explicit state schema. Our A2A delegation passes freeform text; a typed shared-state schema at the workspace run level would improve auditability and reduce hallucinated handoffs.
+
+**Terminology collisions:**
+- "committee" — their agent group term. We say "team" or "org." No collision, different domain.
+
+**Signals to react to:**
+- 55k ⭐ on a vertical demo is the strongest signal we have that the "AI company of specialist agents" metaphor resonates far beyond our immediate developer audience — validates our core product thesis.
+- If a production-ready fork appears (real trading, live positions) → Starfire "investment committee" org-template becomes immediately valuable (see filed issue).
+- If LangGraph ships breaking 2.x API changes → our LangGraph adapter faces identical breakage; monitor their migration guides in sync with this repo.
+- If the React Flow editor is extracted as a standalone embeddable component → evaluate directly for our Canvas layer.
+
+**Last reviewed:** 2026-04-15 · **Stars / activity:** 55k ⭐, trending Apr 15 2026
 
 ---
 
@@ -974,3 +1002,11 @@ Short-list of projects to write up next time someone has an hour:
   Delta specs for brownfield. Not core agent-infra but the planning artifact
   pattern (proposal.md + specs + design.md + tasks.md) is relevant to our
   PM workspace planning flow.
+- **Google Colab MCP Server** (`googlecolab/colab-mcp`) — official Google MCP
+  server bridging any MCP-compatible agent to a Google Colab cloud session.
+  Apache-2.0, Python, 504 ⭐, v1.0.2 March 27 2026. Tools: create/execute/
+  reorganise cells, manage pip deps. Works with Claude Code and Gemini CLI.
+  No external contributions accepted (internal Google project). Relevant when
+  we want to give DevOps or Research workspaces on-demand cloud compute
+  without managing GPU infra — a Starfire workspace could call Colab via
+  MCP instead of spinning up a Modal sandbox.
