@@ -741,6 +741,60 @@ instead of Claude Code with a new adapter.
 
 ---
 
+### claude-mem — `thedotmack/claude-mem`
+
+**Pitch:** "Automatically captures everything Claude does during your coding sessions, compresses it with AI, and reuses that context in future sessions."
+
+**Shape:** TypeScript 83%, AGPL-3.0, 57.5k ⭐. Claude Code plugin installed via `npx claude-mem install`. Five lifecycle hooks (SessionStart, UserPromptSubmit, PostToolUse, Stop, SessionEnd) capture all tool usage automatically. AI compresses captures into semantic summaries stored in SQLite + Chroma vector DB. Hybrid semantic/keyword search. Three-layer progressive disclosure for retrieval: `search` (compact index, ~50–100 tokens) → `timeline` (chronological context) → `get_observations` (full detail on demand). Worker service on port 37777 with web UI. Also supports Gemini CLI and OpenCode.
+
+**Overlap with us:** Directly targets the compaction problem our Holaboss entry references. Our `workspace-template/hooks/` has stub lifecycle hooks; claude-mem shows the full production pattern. Chroma vector search is an alternative to our DB-only `agent_memories`. The 3-layer retrieval pattern applies to our `recall_memory` MCP tool.
+
+**Differentiation:** Single-session plugin, not a multi-agent platform. No org hierarchy, no A2A, no canvas, no scheduling. AGPL-3.0 is a **commercial risk** — any product incorporating it must open-source. Evaluate for inspiration, not direct adoption.
+
+**Worth borrowing:**
+- **3-layer progressive disclosure** — index → timeline → full detail on demand. Apply to `recall_memory`: return a compact index first, fetch full records only when agent requests them. Significant token savings.
+- **Five lifecycle hooks** — exact hook shape needed in `workspace-template/hooks/`. Copy the names and contract as our hook standard.
+
+**Terminology collisions:**
+- "session" — their capture unit; ours is informal. No hard collision.
+- "observations" — their raw captured tool events. Our `activity_logs` is the equivalent.
+
+**Signals to react to:**
+- If claude-mem adds cross-workspace memory sharing → overlaps our TEAM-scoped `agent_memories`; evaluate as a memory backend.
+- If a permissive-licensed fork appears → reassess for direct adoption in `workspace-template/`.
+- 57k stars on a Claude Code plugin is the largest signal yet that session persistence is the #1 pain point in our target user base.
+
+**Last reviewed:** 2026-04-15 · **Stars / activity:** 57.5k ⭐, trending today
+
+---
+
+### Google Agent Development Kit — `google/adk-python`
+
+**Pitch:** "An open-source, code-first Python toolkit for building, evaluating, and deploying sophisticated AI agents with flexibility and control."
+
+**Shape:** Python (Apache-2.0), ~8.2k ⭐, v1.0.0 stable (2026). Google's official agent framework. Supports LLM, workflow, and custom agent types in flexible hierarchies. Native A2A protocol integration. MCP as both client and server. HITL tool confirmation flow. Session rewind (roll back to any prior invocation state). Vertex AI Code Execution Sandbox for agent-generated code. Deployment target: Agent Engine on Google Cloud. Gemini-first but model-agnostic.
+
+**Overlap with us:** A2A support means ADK agents can join our mesh as first-class peers — our `a2a_executor.py` should be tested against ADK's A2A client. MCP client/server mirrors our `mcp-server` surface. HITL confirmation maps to `POST /workspaces/:id/approvals`. Multi-agent hierarchies are the same architectural thesis as our parent/child workspace model. Agent Engine is a direct GCP-native alternative deployment path for our target segment.
+
+**Differentiation:** ADK is a **developer SDK with a GCP deployment backend** — no visual canvas, no org marketplace, no role-based plugin registry, no WebSocket org chart, no channels, no RBAC governance. Agents are Python code objects; Starfire workspaces are prompt-and-YAML configured. Google targets GCP-native enterprise; Starfire targets developers wanting a no-code agent company.
+
+**Worth borrowing:**
+- **Session rewind** — roll back agent state to before a previous invocation, analogous to git checkout on agent history. Our `pause`/`resume` has no rollback; this would be high value for debugging failed delegation chains.
+- **Formal callback system** for intercepting all tool calls — more structured than our ad-hoc hooks in `a2a_executor.py`.
+
+**Terminology collisions:**
+- "agent" — ADK: a Python class with declared tools and model. Ours: a Docker container. Same word, very different runtime model.
+- "plugin" / "skill" — ADK uses neither; they say "tool" and "extension." No collision, but our docs should be explicit when discussing ADK integrations.
+
+**Signals to react to:**
+- If ADK ships a visual canvas for multi-agent org hierarchies → direct Canvas competition from Google's distribution.
+- If ADK's A2A samples become the de facto reference → audit `a2a_executor.py` for compatibility gaps immediately.
+- If Agent Engine pricing is announced below our self-hosted cost → GCP lock-in risk for cost-sensitive segment; position Starfire's infra-agnosticism harder.
+
+**Last reviewed:** 2026-04-15 · **Stars / activity:** ~8.2k ⭐, v1.0.0 stable 2026
+
+---
+
 ## Candidates to add (backlog)
 
 Short-list of projects to write up next time someone has an hour:
@@ -762,3 +816,9 @@ Short-list of projects to write up next time someone has an hour:
   standard to open-agents. Now that open-agents is a full entry, this repo
   deserves its own write-up as a pure skills-registry standard (separate
   from the agent runtime).
+- **Block Goose** (`block/goose`) — local-first AI agent with MCP support
+  from Block (Square). ~4.9k ⭐. Relevant for MCP tool-use patterns and
+  local-execution model.
+- **backnotprop/plannotator** — visual annotation tool for reviewing coding
+  agent plans. ~4.2k ⭐. Relevant to our Canvas approval flow and plan
+  review UX.
