@@ -517,6 +517,89 @@ builders; Starfire users are developers building agent companies.
 
 ---
 
+### GitHub MCP Server — `github/github-mcp-server`
+
+**Pitch:** "GitHub's official MCP Server — connect any AI agent to the full GitHub platform."
+
+**Shape:** Go 96% (MIT), 28.9k ⭐, v0.33.1 April 14 2026. Hosted endpoint at `https://api.githubcopilot.com/mcp/` (zero self-hosting needed) plus Docker and local binary. **40+ tools** spanning: repo ops (read/write files, push, branch, fork), issues and PRs (create, update, merge, comment), Actions/CI (list, trigger, read logs), and security (code scanning, Dependabot, secret scanning). Full write access with OAuth scoping; `--read-only` flag for restricted deployments. Supported clients: VS Code Copilot, Claude Desktop, Cursor, Windsurf, JetBrains, Gemini CLI.
+
+**Overlap with us:** Our DevOps Engineer and Backend Engineer workspaces need GitHub integration — the GitHub MCP server is the turnkey answer. `push_files` + `create_pull_request` + `actions_run_trigger` maps exactly to our DevOps workspace's core loop. The hosted endpoint eliminates a whole class of credential management complexity our `workspace_channels` currently handles manually.
+
+**Differentiation:** Pure MCP tool provider — no agent runtime, no org hierarchy, no scheduling, no memory. Fully complementary to Starfire: a workspace with the GitHub MCP server wired in gains the full GitHub API as native tools.
+
+**Worth borrowing:**
+- **Hosted MCP endpoint pattern** — `api.githubcopilot.com/mcp/` lets clients connect with only an OAuth token; no server to manage. Our `mcp-server` should offer a hosted option using the same model, enabling workspaces to consume it without a running sidecar.
+- **`--read-only` flag** — a single flag restricts all tools to safe read operations. Our plugin system has no equivalent; workspace-level read-only mode would be valuable for auditor workspaces.
+- **Security tool surface** (Dependabot alerts, code scanning, secret scanning) — richer than what our Security Auditor workspace currently calls; consider wiring these as first-class tools in its config.
+
+**Terminology collisions:**
+- "Copilot" — GitHub's AI assistant brand. Ours: undefined. No collision but documentation must clarify "GitHub MCP Server ≠ GitHub Copilot."
+- "tool" — their 40 MCP tools. Ours: plugins / skills. Standard MCP vocabulary, no confusion expected.
+
+**Signals to react to:**
+- If GitHub adds an agent-identity layer (per-installation DID, audit logs per agent) → A2A trust story and our governance gap close simultaneously.
+- If Copilot Spaces becomes the standard multi-agent GitHub workspace → evaluate as a canvas competitor for developer-first teams.
+- As the official server, version drift is low-risk; track their release cadence for new tool categories (e.g., GitHub Models, GitHub Packages).
+
+**Last reviewed:** 2026-04-16 · **Stars / activity:** 28.9k ⭐, v0.33.1 April 14 2026
+
+---
+
+### OpenAI Codex — `openai/codex`
+
+**Pitch:** "A lightweight coding agent that runs in your terminal — reads, changes, and runs code with sandboxed execution and MCP connectivity."
+
+**Shape:** Rust (MIT), 67k ⭐, v0.121-alpha4 April 13 2026. Terminal UI (TUI) + non-interactive mode. Runs locally in the selected directory with configurable sandbox (network off, filesystem scoped). Key features: **subagent parallelization** for complex tasks, **MCP server connectivity** via `~/.codex/config.toml`, **Realtime V2 background agent streaming** (incremental results while you continue working), and a `--review` mode that spins up a separate Codex agent to review code before commit. v0.116.0 added enterprise features. Model-agnostic via OpenAI-compatible endpoints.
+
+**Overlap with us:** Same terminal-native coding agent space as Claw Code (`instructkr/claw-code`, already tracked) but from OpenAI with 67k stars. Subagent parallelization ≈ our `delegate_task`. MCP connectivity means Codex agents can reach our `mcp-server` tools directly. The `--review` mode (dedicated reviewer agent) mirrors our QA workspace role pattern.
+
+**Differentiation:** Single-machine, no persistence beyond the session, no org hierarchy, no canvas, no A2A mesh, no scheduling, no channels. The sandbox is filesystem/network restricted by default — conservative security model vs. our full-container isolation. Fully complementary: a Starfire workspace *could* run Codex as its execution substrate via a new adapter (similar to our Claw Code adapter path).
+
+**Worth borrowing:**
+- **`--review` mode** — spawning a dedicated reviewer agent before a commit is the QA gate pattern in a single CLI flag. Our PM workspace should offer a comparable "require QA review before delegation completes" flag in `config.yaml`.
+- **Background streaming** (Realtime V2) — incremental task output streamed to the terminal while other work continues. Our Canvas shows final A2A results; streaming intermediate output would significantly improve UX for long-running DevOps tasks.
+- **Subagent parallelization** — Codex spawns N workers on different sub-problems. Third data point (after OMC and Background Agents) that parallel sub-task execution is the expected UX; our `delegate_task` should support fan-out natively.
+
+**Terminology collisions:**
+- "codex" — OpenAI's legacy code model brand, now repurposed as a CLI agent. Ours: undefined. No collision.
+- "sandbox" — their filesystem/network-restricted execution context. Ours: Docker container. Different scope.
+
+**Signals to react to:**
+- If Codex ships a hosted/cloud mode (not just local) → OpenAI enters the agent platform space with a 67k-star installed base; our differentiation narrative needs immediate update.
+- If Codex adds an A2A or inter-agent coordination layer → direct substitution risk for our Claude Code adapter users, at enormous scale.
+- Enterprise feature velocity (v0.116.0 enterprise, v0.121 alpha) suggests OpenAI is moving fast toward production-grade features; watch 1.0 GA timeline.
+
+**Last reviewed:** 2026-04-16 · **Stars / activity:** 67k ⭐, v0.121-alpha4 April 13 2026
+
+---
+
+### mcp-agent — `lastmile-ai/mcp-agent`
+
+**Pitch:** "Build effective agents using Model Context Protocol and simple workflow patterns — MCP is all you need."
+
+**Shape:** Python 99.7% (Apache-2.0), 8.3k ⭐. Implements the six Anthropic agent workflow patterns (Parallel/Map-Reduce, Router, Intent Classifier, Orchestrator-Workers, Deep Research, Evaluator-Optimizer) as composable MCP-native primitives. Agents expose themselves as MCP servers ("server-of-servers"), enabling arbitrary nesting. **Temporal durable execution** backend for pause/resume without code changes. OpenTelemetry observability built in. Swarm-compatible multi-agent handoffs. Human-in-the-loop approval gates.
+
+**Overlap with us:** The Orchestrator-Workers pattern ≈ our PM delegating to Research Lead / Dev Lead. The six workflow patterns are a direct taxonomy for how our org templates coordinate. Temporal integration is a second data point (after our own Temporal integration) validating durable execution as the right substrate for long-running agent work. HITL gates ≈ our `POST /workspaces/:id/approvals`.
+
+**Differentiation:** Pure Python library — no Docker isolation per agent, no visual canvas, no workspace registry, no channels, no scheduling beyond Temporal. "MCP is all you need" philosophy is more minimal than Starfire's operational-completeness stance. Complementary: a Starfire workspace *running* mcp-agent coordination code is a valid architecture, especially for teams already using Temporal.
+
+**Worth borrowing:**
+- **Server-of-servers pattern** — agents acting as MCP servers that expose other MCP servers downstream. Our `mcp-server` currently exposes tools to workspaces; making workspaces themselves addressable as MCP servers (not just A2A endpoints) would enable MCP-native orchestration without A2A.
+- **Six-pattern taxonomy** — the Anthropic agent pattern names (Parallel, Router, Orchestrator-Workers, etc.) are becoming a shared vocabulary. Adopt them in our `org-templates/` README as the named coordination patterns each template implements.
+
+**Terminology collisions:**
+- "agent" — their composable workflow unit. Ours: Docker container. Standard collision.
+- "server-of-servers" — their nested MCP architecture. Worth defining explicitly in our `mcp-server` docs to avoid confusion.
+
+**Signals to react to:**
+- If mcp-agent's six patterns become the canonical vocabulary for agent workflows → align our org-template names to these patterns for discoverability.
+- If LastMile AI ships a hosted mcp-agent cloud → fills the "MCP-native agent platform" gap currently open in the market; watch their roadmap.
+- If Temporal integration is extracted as a standalone adapter → directly swappable with our own Temporal integration; evaluate.
+
+**Last reviewed:** 2026-04-16 · **Stars / activity:** 8.3k ⭐, Apache-2.0, active
+
+---
+
 ## Candidates to add (backlog)
 
 Short-list of projects to write up next time someone has an hour:
@@ -542,8 +625,14 @@ Short-list of projects to write up next time someone has an hour:
   server bridging any MCP agent to a Colab cloud session. Apache-2.0, Python,
   504 ⭐, v1.0.2 March 27 2026. Relevant when DevOps/Research workspaces need
   on-demand cloud GPU compute without managing Modal/Daytona.
-- **openbindings.com** — "One interface, every protocol." HN #27 today, blog
+- **openbindings.com** — "One interface, every protocol." HN trending, blog
   post about a unified agent-protocol abstraction layer. Low stars but the
   concept (one SDK that speaks MCP, A2A, OpenAI function-calling, etc.) maps
   directly to our multi-runtime adapter story. Worth a full look if a repo
   emerges.
+- **OWL / CAMEL-AI** (`camel-ai/owl`) — multi-agent framework built on
+  CAMEL-AI where agents cooperate through browsers, terminals, function calls,
+  and MCP tools. Relevant for MCP tool composition patterns.
+- **Tracer-Cloud/opensre** (`Tracer-Cloud/opensre`) — AI SRE framework, 874 ⭐,
+  Apache-2.0. Runbook-aware incident response with 40+ integrations (Datadog,
+  Grafana, Kubernetes, AWS, PagerDuty). Relevant for DevOps workspace tooling.
