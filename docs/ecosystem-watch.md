@@ -627,6 +627,46 @@ builders; Starfire users are developers building agent companies.
 
 ---
 
+### CrewAI — `crewAIInc/crewAI`
+
+**Pitch:** "Framework for orchestrating role-playing, autonomous AI agents" — role-defined crews that tackle multi-step tasks collaboratively, promoted from our backlog now that v1.10 shipped MCP + A2A.
+
+**Shape:** Python, MIT, 45.9k ⭐, v1.10.1. Native MCP support via `crewai-tools[mcp]` with automatic transport negotiation (Stdio → SSE → Streamable HTTPS). A2A task delegation added in v1.10. Unified memory system consolidates short-term, long-term, entity, and external memory into one API with adaptive-depth recall.
+
+**Overlap with us:** Agent role definitions; MCP tool wiring; multi-agent task delegation — all intersect with our workspace + plugins architecture. Their "crew" maps nearly 1:1 to a Starfire workspace team config.
+
+**Differentiation:** CrewAI is a Python framework for defining agent crews in-process; we are a workspace infrastructure layer with Docker containers, hooks, and CI/CD. CrewAI agents share a process; ours are isolated containers with independent git state.
+
+**Worth borrowing:** (1) MCP transport negotiation fallback chain (Stdio → SSE → Streamable HTTPS) for our own plugin loader; (2) Adaptive-depth memory recall with composite scoring; (3) YAML role/goal definition pattern compatible with our `config.yaml`.
+
+**Terminology collisions:** "crew" vs "team" — same concept (group of specialized agents) with different words. "Tool" — CrewAI: Python callable registered per-agent; ours: MCP server or CLI command.
+
+**Signals to react to:** CrewAI adopting A2A 1.0 as a cross-framework delegation standard would enable inter-team routing between Starfire workspaces and CrewAI crews. Watch for `crewai-tools[molecule-plugin-*]` wrappers as an adoption signal for our plugin layer.
+
+**Last reviewed:** 2026-04-16 · **Stars / activity:** 45.9k ⭐, Python, MIT, v1.10.1
+
+---
+
+### Paperclip — `paperclipai/paperclip`
+
+**Pitch:** "Zero-human company" OS: orchestrate a team of AI agents with org-chart roles, monthly budgets, and delegation flows — the company as a deployable config.
+
+**Shape:** TypeScript (Node.js + React), MIT, 54.2k ⭐, v2026.403.0 (April 4 2026). Hierarchical CEO/manager/worker agents; PostgreSQL for persistent state; runtime skill injection; no MCP support yet. Integrates OpenClaw, Claude Code, Codex, Cursor, Bash, HTTP agent types.
+
+**Overlap with us:** Org-chart structures map directly to `org-templates/`; their "employee" ~= our workspace; budget governance and delegation flows overlap with our role definitions. "Atomic execution" and "persistent agent state" patterns align with our workspace hooks.
+
+**Differentiation:** Paperclip models the whole company as a product; we model individual expert workspaces as infrastructure. Paperclip is a vertical application; we are the substrate it could run on.
+
+**Worth borrowing:** (1) Budget-per-agent cap with automatic hard stop — apply to token-budget enforcement in our workspace `config.yaml`; (2) Org-chart topology as a first-class YAML entity exportable/importable; (3) Runtime skill injection mid-session without container restart.
+
+**Terminology collisions:** "agent" — Paperclip: a persona with a role, boss, and budget; ours: a Docker-containerized Claude Code workspace. "Company" — their root concept; ours: a GitHub org.
+
+**Signals to react to:** MCP support landing in Paperclip would make it a direct consumer of our plugin layer. If their org-template format stabilizes, alignment with our `org-templates/` YAML schema could enable cross-pollination and shared tooling.
+
+**Last reviewed:** 2026-04-16 · **Stars / activity:** 54.2k ⭐, TypeScript, MIT
+
+---
+
 ## Candidates to add (backlog)
 
 Short-list of projects to write up next time someone has an hour:
@@ -635,7 +675,6 @@ Short-list of projects to write up next time someone has an hour:
   runtime; worth a full entry for how their graph model compares to our
   workspace hierarchy.
 - **AutoGen** (`microsoft/autogen`) — ditto, we adapt it.
-- **CrewAI** (`crewaiinc/crewai`) — ditto.
 - **DeepAgents** (`langchain-ai/deepagents`) — ditto; particularly their
   sub-agent feature that collides with our "skills" word.
 - **OpenClaw** — check if this is still live post-Hermes rebrand; our
