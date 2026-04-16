@@ -600,6 +600,33 @@ builders; Starfire users are developers building agent companies.
 
 ---
 
+### Bloom — `safety-research/bloom`
+
+**Pitch:** "An open-source tool for automated behavioral evaluations of LLMs — specify a behavior, quantify its frequency and severity across auto-generated scenarios."
+
+**Shape:** Python 100% (MIT), 1.3k ⭐, Dec 19 2025, 230 commits, actively maintained by **Anthropic's safety-research team**. Four-stage automated pipeline: **Understanding** (parses behavior spec + examples), **Ideation** (generates diverse scenarios with variation dimensions), **Rollout** (executes conversations against the target model), **Judgment** (scores transcripts, produces elicitation rate + severity). Custom behaviors defined in `seed.yaml`. Ships four ready-made evaluations: delusional sycophancy, instructed long-horizon sabotage, self-preservation, self-preferential bias across 16 frontier models. W&B sweep integration. Interactive web viewer. CLI: `bloom run` / `bloom sweep`.
+
+**Overlap with us:** Our Security Auditor workspace performs compliance checks but has no behavioral evaluation layer — it doesn't test whether an agent is being subtly sycophantic or self-preserving. Bloom fills that gap directly. The four shipped behaviors (especially **sabotage** and **self-preservation**) are exactly the threat models a Starfire org operator should run against their own workspaces before deploying to production.
+
+**Differentiation:** Not a runtime or orchestration framework — purely an evaluation harness. No agent identity model, no scheduling, no channels. Fully complementary: wire Bloom as a step in a `workspace-template/hooks/` pre-deployment check.
+
+**Worth borrowing:**
+- **`seed.yaml` behavior spec format** — a lightweight, human-readable way to define "this is the behavior I want to test for, here are examples, here are variation axes." Our Security Auditor workspace could ship a library of pre-written behavior specs as a plugin.
+- **Automated scenario diversity via "variation dimensions"** — Bloom varies noise, emotional pressure, and context systematically. Worth adopting in our QA workspace as a structured test-variation pattern rather than ad-hoc prompt variations.
+
+**Terminology collisions:**
+- "rollout" — Bloom: executing evaluation conversations. Ours: informal/deployment. No hard collision.
+- "judgment" — Bloom: scoring stage. Ours: undefined. Worth being explicit in docs.
+
+**Signals to react to:**
+- If Bloom's behavior library expands to cover agentic safety scenarios (tool misuse, data exfiltration attempts) → integrate as a mandatory pre-deploy eval for Starfire workspaces with external tool access.
+- If Bloom becomes the standard eval harness for agent safety → alignment between Starfire's Security Auditor outputs and Bloom's scoring format would be a strong enterprise differentiator.
+- Being Anthropic-originated, watch for integration into Claude model cards — behaviors Bloom can detect may eventually map to model-level mitigations worth exposing via our `config.yaml` safety settings.
+
+**Last reviewed:** 2026-04-16 · **Stars / activity:** 1.3k ⭐, MIT, Anthropic safety-research
+
+---
+
 ## Candidates to add (backlog)
 
 Short-list of projects to write up next time someone has an hour:
