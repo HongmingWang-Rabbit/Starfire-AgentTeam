@@ -435,6 +435,88 @@ builders; Starfire users are developers building agent companies.
 
 ---
 
+### Microsoft Agent Governance Toolkit — `microsoft/agent-governance-toolkit`
+
+**Pitch:** "Runtime security for AI agents — policy enforcement, zero-trust identity, execution sandboxing, and reliability engineering covering all 10 OWASP Agentic risks."
+
+**Shape:** Python 83% + TypeScript 10% (MIT), 1k ⭐, v3.1.0 April 2026, 614 commits. Seven modular packages: **Agent OS** (OPA Rego + Cedar policy engine, <0.1ms p99 latency), **Agent Mesh** (cryptographic DID identity + dynamic trust scoring 0–1000), **Agent Runtime** (execution rings + saga orchestration + emergency kill), **Agent SRE** (SLOs, circuit breakers, chaos engineering), **Agent Compliance** (EU AI Act, HIPAA, SOC 2, OWASP mapping), **Agent Marketplace** (Ed25519-signed plugin lifecycle), **Agent Lightning** (RL training governance). Installs as sidecar, middleware, or serverless container alongside any framework.
+
+**Overlap with us:** Agent Compliance maps directly to our compliance plugin gap (issue #256). Agent Marketplace's signed plugin lifecycle is our `plugins/` registry with supply-chain security added. **Agent Mesh's Inter-Agent Trust Protocol (IATP)** with DID identities and trust scoring addresses exactly the A2A trust gap in our current delegations — we have no signature or trust level on A2A messages.
+
+**Differentiation:** Pure governance middleware, not an agent platform. No canvas, no org hierarchy, no scheduling, no channels. Designed to wrap existing frameworks (LangChain, CrewAI, AutoGen, Microsoft Agent Framework) — fully complementary to Starfire, not competitive.
+
+**Worth borrowing:**
+- **IATP trust scoring on A2A messages** — cryptographic DID per workspace + 0–1000 trust score on every delegation. Our `a2a_executor.py` currently passes tasks with no provenance. Adding signed delegation headers would unlock per-workspace trust policies and audit trails (see filed issue).
+- **Agent SRE circuit breakers** — automatic delegation halt when a downstream workspace's error rate exceeds SLO. Second data point (after Gas Town's Deacon patrol) that cross-workspace health monitoring is becoming table-stakes.
+- **OWASP Agentic AI Top 10 mapping** — use as checklist for our security auditor workspace's system prompt.
+
+**Terminology collisions:**
+- "Agent OS" — their stateless policy engine. Ours: informal. No runtime collision.
+- "marketplace" — their Ed25519-signed plugin store. Ours: our `plugins/` registry. Same intent.
+
+**Signals to react to:**
+- If IATP is published as an open spec → evaluate adopting alongside A2A for signed inter-workspace delegation.
+- If Agent Compliance module gains EU AI Act certification → enterprise buyers will require it; either integrate or offer comparable coverage.
+- Stars at 1k despite April 2 release + Microsoft backing = low initial uptake. Watch 30-day trajectory — if it crosses 5k it will become an enterprise expectation.
+
+**Last reviewed:** 2026-04-16 · **Stars / activity:** 1k ⭐, v3.1.0 April 2026
+
+---
+
+### Goose — `block/goose`
+
+**Pitch:** "An open source, extensible AI agent that goes beyond code suggestions — install, execute, edit, and test with any LLM."
+
+**Shape:** Rust 51% + TypeScript 43% (Apache-2.0), 42.2k ⭐, v1.30.0 April 8 2026. Now stewarded by the **Agentic AI Foundation (AAIF)** at the Linux Foundation — no longer a Block product. Available as native desktop app (macOS/Linux/Windows), CLI, and API. Supports 15+ LLM providers (Anthropic, OpenAI, Google, Ollama, OpenRouter, Azure, Bedrock). **70+ MCP extensions** for tool connectivity. Model-agnostic via ACP providers for subscription-based access.
+
+**Overlap with us:** MCP-native tool surface mirrors our `mcp-server`. Local desktop + CLI mirrors our Claude Code runtime adapter (different execution substrate, same user goal). The 70+ extension catalogue is the largest MCP extension library we've seen — the benchmark for what a mature plugin ecosystem looks like. Linux Foundation stewardship signals enterprise credibility.
+
+**Differentiation:** Single-user local agent — no multi-agent coordination, no org hierarchy, no A2A, no visual canvas, no scheduling, no channels. Rust-native; no Python or TypeScript SDK for programmatic embedding. The Linux Foundation move makes it a community standard, not a startup product, but it remains a personal productivity tool rather than an agent OS.
+
+**Worth borrowing:**
+- **70+ extension catalogue structure** — how they organise, discover, and install MCP extensions is the reference design for our `plugins/` marketplace page. Their extension naming conventions are worth adopting as a compatibility standard.
+- **ACP provider model** — subscription-based LLM access (user brings their ChatGPT/Claude subscription, no API key required). Lowers the barrier for our workspace-template users who don't want to manage API keys.
+
+**Terminology collisions:**
+- "extension" — Goose: an MCP server packaged for Goose. Ours: "plugin" or "skill." Three words for the same concept across the ecosystem.
+- "session" — Goose: a single agent run. Ours: informal.
+
+**Signals to react to:**
+- Linux Foundation stewardship → if AAIF defines extension/agent standards, align our plugin manifest with them (same instinct as `agentskills.io`).
+- If Goose adds multi-agent coordination (spawning child Goose instances, inter-agent messaging) → 42k-star installed base with MCP fluency becomes a direct substitution risk for our Claude Code adapter users.
+- If Goose's 70+ extension library is indexed in a public registry → submit our `mcp-server` tools there for cross-platform discovery.
+
+**Last reviewed:** 2026-04-16 · **Stars / activity:** 42.2k ⭐, v1.30.0 April 8 2026, Linux Foundation
+
+---
+
+### smolagents — `huggingface/smolagents`
+
+**Pitch:** "A barebones library for agents that think in code — ~1,000 lines of core code, 30% fewer LLM steps, 44.2% on GAIA."
+
+**Shape:** Python (Apache-2.0), ~26k ⭐, actively maintained. Two agent paradigms: **CodeAgent** (writes and executes Python as tool calls — avoids JSON schema overhead) and **ToolCallingAgent** (traditional function-calling). Integrates MCP servers, LangChain tools, Hugging Face Hub Spaces, and custom Python functions as tools. Sandboxed execution via E2B, Blaxel, Modal, Docker, or Pyodide+Deno WebAssembly. Model-agnostic via LiteLLM. Tools shareable to the Hub for community reuse.
+
+**Overlap with us:** MCP integration means any smolagents tool is reachable from a Starfire workspace via our `mcp-server`. The Hub tool-sharing model is the same instinct as our `plugins/` registry, with HuggingFace's distribution network behind it. CodeAgent's Python-execution approach is architecturally similar to our `claude_sdk_executor.py` — both treat code execution as the primary tool-use primitive.
+
+**Differentiation:** Single-agent library, no multi-agent org model, no workspace persistence, no canvas, no A2A, no scheduling, no channels. The <1k LoC core is a deliberate minimalist philosophy — the opposite of Starfire's operational completeness. Complementary: a Starfire workspace *running* smolagents for sub-tasks is a valid architecture.
+
+**Worth borrowing:**
+- **CodeAgent paradigm** — generating Python code instead of JSON tool calls uses 30% fewer steps on average. Could apply to our `claude_sdk_executor.py` as an optional "code-first" execution mode for complex multi-step tasks.
+- **Hub tool sharing** — community-indexed, one-line-install tools. Our `plugins/` install UX should target this simplicity.
+
+**Terminology collisions:**
+- "tool" — smolagents: a Python function or MCP endpoint. Ours: MCP tools vs. skills vs. plugins. Familiar word, three meanings.
+- "agent" — their lightweight Python class. Ours: Docker container. Same word, very different operational scope.
+
+**Signals to react to:**
+- If smolagents Hub tool library grows to 1k+ entries → it becomes the npm of agent tools; ensure our `mcp-server` tools are listed there.
+- If HuggingFace ships a multi-agent orchestration layer on top of smolagents → direct framework competition with significant distribution advantage.
+- GAIA benchmark adoption as a standard → instrument our workspace evaluations against it for apples-to-apples comparison.
+
+**Last reviewed:** 2026-04-16 · **Stars / activity:** ~26k ⭐, Apache-2.0, actively maintained
+
+---
+
 ## Candidates to add (backlog)
 
 Short-list of projects to write up next time someone has an hour:
@@ -453,3 +535,15 @@ Short-list of projects to write up next time someone has an hour:
   case we want agent-to-agent discovery beyond a single org.
 - **Temporal** (`temporalio/temporal`) — we already integrate; entry
   should cover when to lean on Temporal vs our in-house scheduling.
+- **Meta Llama Stack** (`meta-llama/llama-stack`) — unified Llama 4 deployment
+  and inference framework, 6.4k ⭐. Not agent infra per se, but relevant if
+  we want a self-hosted open-weight model backend for cost-sensitive workspaces.
+- **Google Colab MCP Server** (`googlecolab/colab-mcp`) — official Google MCP
+  server bridging any MCP agent to a Colab cloud session. Apache-2.0, Python,
+  504 ⭐, v1.0.2 March 27 2026. Relevant when DevOps/Research workspaces need
+  on-demand cloud GPU compute without managing Modal/Daytona.
+- **openbindings.com** — "One interface, every protocol." HN #27 today, blog
+  post about a unified agent-protocol abstraction layer. Low stars but the
+  concept (one SDK that speaks MCP, A2A, OpenAI function-calling, etc.) maps
+  directly to our multi-runtime adapter story. Worth a full look if a repo
+  emerges.
