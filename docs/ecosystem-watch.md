@@ -687,6 +687,46 @@ builders; Starfire users are developers building agent companies.
 
 ---
 
+### Langflow — `langflow-ai/langflow`
+
+**Pitch:** Visual drag-and-drop platform for building AI agents and workflows — every workflow deploys as an API or an MCP server out of the box.
+
+**Shape:** Python, MIT, 147k ⭐ (largest non-aggregator agent project by stars). Visual builder + Python component customization. Acquired by DataStax 2024. Bundles MCP server mode: any Langflow flow is instantly consumable by Claude Desktop, Gemini CLI, or any MCP client. LangGraph-native for graph-based multi-agent flows.
+
+**Overlap with us:** MCP server mode directly parallels #313 (workspace-as-MCP-server). Langflow's "component" ~= our "plugin". Their flow-as-API pattern mirrors how we'd expose workspace skills to external consumers.
+
+**Differentiation:** Langflow is a visual no-code product; we are typed-config infrastructure with Docker isolation and CI/CD hooks. Langflow lacks workspace isolation, RBAC, git-backed state, or org-template governance. Different buyer: Langflow targets builders who want to prototype quickly; we target engineering teams running production agent fleets.
+
+**Worth borrowing:** (1) Automatic MCP server endpoint from workflow definition — apply to #313; (2) Step-by-step execution debugger showing token usage per node; (3) LangSmith/LangFuse observability wiring pattern.
+
+**Terminology collisions:** "flow" — Langflow: visual directed graph; ours: task execution within a workspace. "Component" — Langflow: UI node; ours: plugin. "Agent" — stateless flow; ours: persistent containerized workspace.
+
+**Signals to react to:** If Langflow adds Docker-isolated agent execution or workspace persistence, it enters our territory. Watch for `langflow-ai/langflow-mcp` or similar bridge repos.
+
+**Last reviewed:** 2026-04-16 · **Stars / activity:** 147k ⭐, Python, MIT, DataStax
+
+---
+
+### OpenHarness — `HKUDS/OpenHarness`
+
+**Pitch:** "Open Agent Harness with a Built-in Personal Agent — Ohmo!" — a research-originated framework for understanding and extending production AI agent internals, launched April 2026.
+
+**Shape:** Python, MIT, 9.9k ⭐, v0.1.2 (April 6 2026). Created by HKUDS (Hong Kong University Data Science lab). Ships a "personal agent" (Ohmo) as a reference implementation. Plugin/provider extension points. Unified setup flows added in v0.1.2.
+
+**Overlap with us:** The term "harness" is our core product metaphor (Claude Code harness, settings harness, hook harness). Direct naming collision with high confusion potential. Their plugin/provider model also mirrors our plugins/ layer.
+
+**Differentiation:** OpenHarness is a research framework for studying agent internals; we are production multi-workspace infrastructure. OpenHarness has no workspace isolation, org-template governance, or CI/CD layer. "Ohmo" personal agent is a demo, not a deployable workspace.
+
+**Worth borrowing:** (1) "Harness transparency" design goal — expose internals for inspection; apply to our hook system as an audit/observability layer; (2) Unified setup flow abstraction for onboarding new agent types.
+
+**Terminology collisions:** "harness" — OpenHarness: framework wrapper for studying agent internals; ours: Claude Code execution environment + settings layer. High confusion risk in the ecosystem. Monitor for coverage that conflates the two.
+
+**Signals to react to:** If OpenHarness gains significant traction (30k+ stars), the "harness" term may become associated with their meaning rather than ours. Consider adding a disambiguation note to our README.
+
+**Last reviewed:** 2026-04-16 · **Stars / activity:** 9.9k ⭐, Python, MIT, HKUDS (HK University)
+
+---
+
 ## Candidates to add (backlog)
 
 Short-list of projects to write up next time someone has an hour:
