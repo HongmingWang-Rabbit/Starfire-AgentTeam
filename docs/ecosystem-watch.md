@@ -667,6 +667,26 @@ builders; Starfire users are developers building agent companies.
 
 ---
 
+### Gemini CLI — `google-gemini/gemini-cli`
+
+**Pitch:** Google's open-source AI agent for the terminal — ReAct loop with Gemini models, built-in tools (file ops, shell, web fetch, Google Search grounding), and full MCP client support.
+
+**Shape:** TypeScript, Apache 2.0, 101k ⭐, active daily commits (last push 2026-04-16). MCP client mode connects to any MCP server via config. Also ships an MCP server mode so other agents can invoke Gemini CLI as a tool. 1M-token context window on Gemini 2.5 Pro.
+
+**Overlap with us:** Direct architectural parallel to Hermes Agent and Claude Code — all three are terminal agents with tool-use loops, file system access, and MCP integration. Google Search grounding is a differentiator we lack.
+
+**Differentiation:** Gemini CLI is Gemini-first (other models possible via API key swap). No workspace isolation, no hooks system, no org-template layer. Pure developer tool, not a multi-workspace infrastructure platform.
+
+**Worth borrowing:** (1) Google Search grounding as a built-in tool — could wrap as a Molecule plugin; (2) MCP server mode (expose CLI as an MCP tool) — pattern applicable to our workspace-as-MCP-server concept; (3) Apache 2.0 license means we can study and adapt freely.
+
+**Terminology collisions:** "tools" — Gemini CLI: built-in TypeScript functions; ours: MCP servers or CLI commands. "agent" — single interactive session vs our persistent containerized workspace.
+
+**Signals to react to:** If Gemini CLI adopts A2A protocol for inter-agent delegation, it becomes a peer node in any A2A mesh alongside Starfire workspaces. Watch for `gemini-cli` appearing as an agent type in Paperclip or similar orchestrators.
+
+**Last reviewed:** 2026-04-16 · **Stars / activity:** 101k ⭐, TypeScript, Apache 2.0, Google
+
+---
+
 ## Candidates to add (backlog)
 
 Short-list of projects to write up next time someone has an hour:
